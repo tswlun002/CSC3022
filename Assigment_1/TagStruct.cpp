@@ -1,7 +1,6 @@
 #include "TagStruct.h"
 #include <iostream>
 #include <list>
-#include <regex>
 #include <fstream>
 #define CLOSING_TAG(tagName)   "</"+tagName+">"   //closing  tag
 #define OPEN_TAG(tagName)       "<"+tagName+">"   //opening  tag
@@ -17,47 +16,70 @@ TagStruct tagStruct;
 
 
 /**
- * @brief  Store tag names from the given string line
+ * @brief  recursively read char by char in a string line and Store tag names from the given string line
  * first check if line is  not empty 
- * Then check if the first char of line is open arrow and second char of line is not slash forward
+ * If empty we do nothing 
+ * Else, check if the first char of line is open arrow and second char of line is not slash forward
  * Exclude the open arrow and initialise tagName from TagStruct
  * Then extract chars of tag name and we concatenate them 
  * until char is equals to close arrow ('>')
  * Then break the loop 
  * 
- * Befor store tag name ,first check if there was clossing arrow and if tag name is not duplicate
+ * Before store tag name ,first check if there was clossing arrow , if tag name is not empty and if tag name is not duplicate
  * If true, store the tag name 
  * 
+ * recursivley read next char and increment index until last char of string line
+ * 
  * @param line : string line where extract tag name 
+ * 
+ * @return int zero if line is empty(null or white spaces)
+ * @return  recursive call if line is not empty
  */
-void tswlun002::storeTagName(std::string line){
-     if(!line.empty()){
+int  tswlun002::storeTagName(std::string line,int index){
 
+
+     if(line.empty()){
+        return 0;
+     }
+     else{
        tagStruct.openArrow = line[0];
        char forwardSlash = line[1];
-
-       if(tagStruct.openArrow=="<" && forwardSlash!='/'){
+       
+       if(tagStruct.openArrow=="<"){
 
             std::string newLine  = line.substr(1); //exclude "<"
             tagStruct.tagName="";    //init
-
+           
             for (char c:newLine ) {
-                if(c != '>'){
-                    tagStruct.tagName = tagStruct.tagName+c;
+                if(c==' '||c =='<' ){
+                    break;
                 }
-                else
-                {
-                   tagStruct.closingArrow=">";
-                   //tagStruct.openArrow="";
-                   break; 
-                } 
+                else if(c == '>'){
+                    tagStruct.closingArrow =">";
+                    break;
+                }
+                else {
+                    tagStruct.tagName = tagStruct.tagName+c;
+                }     
             }
-            if(tagStruct.closingArrow==">"  && !checkExists(0)){
+            if(!tagStruct.tagName.empty() &&tagStruct.closingArrow==">"&& forwardSlash!='/'&& !checkExists(0)){
                 tagStruct.tagNames.push_back(tagStruct.tagName); 
                
             }  
         }
+        return storeTagName(line.substr(1),++index);
     }
+}
+
+/**
+ * Assume we got tag name;
+ * while newTag is not equals to </tag name>:
+ *  newTag = newTag + char;
+ *  if text exits & fArrow= < & bArrow = > :
+ *      store tagName if does exits and increment count;
+ */
+void tswlun002::storeNestedTag(std::string line){
+    
 }
 
 /**
@@ -110,8 +132,6 @@ void tswlun002::storeTagText(std::string line){
         std::string text = extractTagText(line);
         if(!text.empty()){
             int index  = getIndex(0);
-
-            text = trim(text);
             
             if( (tagStruct.tagTexts.size() ==0 )  && !text.empty()){
                 tagStruct.tagTexts.push_back(text.substr(0,text.size()-(INDEXES(checkTags(line)))));
@@ -213,16 +233,6 @@ bool tswlun002::checkTags(std::string line){
     return (value==1 || value1==1) ? true : false;
 }
 
-/**
- * @brief removes leading and trailing  spaces in a string
- * @param parameter-line string to be trimed
- * @return trimed string 
- */
-std::string tswlun002::trim(std::string line){
-    line = std::regex_replace(line, std::regex("^ +"), " ");
-    line = std::regex_replace(line, std::regex(" +$"), " ");
-    return line;
-}
 
 /**
  * @brief Store formated tag data 
@@ -230,7 +240,8 @@ std::string tswlun002::trim(std::string line){
  */
 void tswlun002::storeTagData(){
     for(int i=0; i<tagStruct.tagNames.size(); i++){
-        std::string data  =tagStruct.tagNames[i]+", "+std::to_string(tagStruct.numberTagPairs[i])+", "+tagStruct.tagTexts[i];
+        std::string data  =tagStruct.tagNames[i]+", "+std::to_string(tagStruct.numberTagPairs[i])+", ";//+tagStruct.tagTexts[i];
+        std::cout<<data<<std::endl;
         tagStruct.tagData.push_back(data);
     }
 }

@@ -34,16 +34,15 @@ int main(){
 
             //read line of the file and put it into variable line
             while(getline(file,line)){
-                line = tswlun002::trim(line);
-                tswlun002::storeTagName(line);
-                tswlun002:: storeTagText(line);
+                tswlun002::storeTagName(line,0);
+                //tswlun002:: storeTagText(line);
             
             }
             //close file
             file.close();
             
             //store data
-            tswlun002::storeTagData();
+           tswlun002::storeTagData();
             }
         }
         //print out tag names and data
@@ -78,4 +77,6 @@ int main(){
 void clear(void){
     system("clear");
 }
+
+
 

@@ -19,7 +19,7 @@ namespace tswlun002{
     /**
      * @brief function to store tag name into vector TagName
      */
-    void storeTagName(std::string line);
+    int storeTagName(std::string line,int index);
     /**
      * @brief Get the Tag Name object
      * @return vector<int> tag name
@@ -41,13 +41,6 @@ namespace tswlun002{
      */
     std::string getTagText();
     
-    /**
-     * @brief  Rmoves leading and trailing spalces on a string line
-     * 
-     * @param line  string line 
-     * @return std::string line with no leading and trailing spaces
-     */
-    std::string trim(std::string line);
     
     /**
      * @brief check tag name if is in a vector of tag names
@@ -97,6 +90,12 @@ namespace tswlun002{
      * @param tagName  searched and print its data
      */
     void searchTag(std::string tagName);
+    
+    /**
+     * @brief Store nested tag name from string line
+     * @param line string line 
+     */
+    void storeNestedTag(std::string line);
       
     /**
      * @brief print out data of the tagStruct (tag name, number tag pair and text(s))
