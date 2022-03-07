@@ -14,6 +14,14 @@ using namespace tswlun002;                        //namespace
  */
 TagStruct tagStruct;
 
+/**
+ * @brief Get the Struct instance
+ * 
+ * @return TagStruct 
+ */
+TagStruct tswlun002::getStruct(){
+    return tagStruct;
+}
 
 /**
  * @brief  recursively read char by char in a string line and Store tag names from the given string line
@@ -35,17 +43,18 @@ TagStruct tagStruct;
  * @return int zero if line is empty(null or white spaces)
  * @return  recursive call if line is not empty
  */
-int  tswlun002::storeTagName(std::string line,int index){
+int  tswlun002::storeTagName(std::string line){
 
 
      if(line.empty()){
+
         return 0;
      }
      else{
        tagStruct.openArrow = line[0];
        char forwardSlash = line[1];
        
-       if(tagStruct.openArrow=="<"){
+       if(tagStruct.openArrow=="<"&& forwardSlash!='/'){
 
             std::string newLine  = line.substr(1); //exclude "<"
             tagStruct.tagName="";    //init
@@ -62,25 +71,18 @@ int  tswlun002::storeTagName(std::string line,int index){
                     tagStruct.tagName = tagStruct.tagName+c;
                 }     
             }
-            if(!tagStruct.tagName.empty() &&tagStruct.closingArrow==">"&& forwardSlash!='/'&& !checkExists(0)){
+            if(!tagStruct.tagName.empty() &&tagStruct.closingArrow==">"&& !checkExists(0)){
+                //std::cout<<tagStruct.tagName<<std::endl;
                 tagStruct.tagNames.push_back(tagStruct.tagName); 
-               
-            }  
+            }
+
+            return 0;  
         }
-        return storeTagName(line.substr(1),++index);
+        return storeTagName(line.substr(1));
     }
 }
 
-/**
- * Assume we got tag name;
- * while newTag is not equals to </tag name>:
- *  newTag = newTag + char;
- *  if text exits & fArrow= < & bArrow = > :
- *      store tagName if does exits and increment count;
- */
-void tswlun002::storeNestedTag(std::string line){
-    
-}
+
 
 /**
  * @brief Get vector of tag names
@@ -126,30 +128,42 @@ std::vector<int> tswlun002::getNumberTagPair(){
  * @param line   string line 
  */
 void tswlun002::storeTagText(std::string line){
+      
     
     if(!line.empty()){
+        std::string Tagtext ="";
+        int index  = getIndex(0);
+        std::string text = extractTagText(line,index,Tagtext);
 
-        std::string text = extractTagText(line);
         if(!text.empty()){
-            int index  = getIndex(0);
             
+        
             if( (tagStruct.tagTexts.size() ==0 )  && !text.empty()){
+              
                 tagStruct.tagTexts.push_back(text.substr(0,text.size()-(INDEXES(checkTags(line)))));
             }
             else{
-
-                if( tagStruct.numberTagPairs[index]==1 &&  tagStruct.tagTexts.size()==index ){
+                
+                if( tagStruct.numberTagPairs[index]==1 &&  tagStruct.tagTexts.size()<=index ){
+                    
                     tagStruct.tagTexts.push_back(text.substr(0,text.size()-(INDEXES(checkTags(line)))));
-                }else{
+                }
+                else{
 
                     std::string newText  = tagStruct.tagTexts[index];
+                   
+                   //concatenate  with : if  closed else with empty space 
+                    if(tagStruct.tagFlags[index]==0 || tagStruct.numberTagPairs[index]>1){
+                        
+                        newText+=" : "+text.substr(0,text.size()-(INDEXES(checkTags(line))));
+                    }
+                    else{
+                        newText+=" "+text.substr(0,text.size()-(INDEXES(checkTags(line))));
+                    }
 
-                    //concatenate 
-                    newText+=" : "+text.substr(0,text.size()-(INDEXES(checkTags(line))));
-                
                     //insert back
                     tagStruct.tagTexts.insert(tagStruct.tagTexts.begin()+index,newText);
-
+                    
                     //erase next element after insertion
                     tagStruct.tagTexts.erase(tagStruct.tagTexts.begin()+(index+1));
                 }
@@ -161,43 +175,88 @@ void tswlun002::storeTagText(std::string line){
 
 /**
  * @brief extract tag text in a string line 
+ * Chope string line until no tag in it or its size is less than equal two
  * @param line  is the string 
  * @return string  tag text 
  */
 
-std::string tswlun002::extractTagText(std::string line){
+std::string tswlun002::extractTagText(std::string line, int index, std::string text){
+    
+    
+    if(checkTags(line)==0 || line.size()<=2){
+         if(!line.empty())
+            text+=line;
+        else{}
 
-    std::string text ="";
-    if(checkTags(line)==1){
+        return text.substr(0,text.find_last_of('>'));
+    }
+    
+    else{
 
         char prev_char = line[0];
         char last_char = line[line.size()-1];
+        char current_char = line[1];
         std::string newLine = line.substr(1);
         std::list<char> chars(newLine.begin(), newLine.end());
-        
-    
-        for (char current_char: chars) {
+       
 
-            std::string s {prev_char,current_char};
-            std::string closeTag = s+tagStruct.tagName+last_char;
+        std::string fisrtTwoChar {prev_char,current_char};
+        std::string closeTag = fisrtTwoChar+tagStruct.tagName+line[line.find_first_of('>')];
+        std::string openTag = prev_char+tagStruct.tagName+line[line.find_first_of('>')];
+       
+        
+        
+        if(openTag==OPEN_TAG(tagStruct.tagName) && current_char != '/' && current_char !=' '){
             
-            if(closeTag==CLOSING_TAG(tagStruct.tagName)){
-                break;
-            }
-            else
-            { 
-                text= text+current_char;
-                prev_char=current_char;
-            }
+            
+            int size  =line.find_first_of('>');
+            line = line.substr(size);
+           
+            tagStruct.tagName =tagStruct.tagNames[index];
+            index++;
+            flagTags(1);
+            int pos = getIndex(0);
+           
         }
-        int size = ("<"+tagStruct.tagName+">").size();
-        text = text.substr(text.find_last_of(">")+1);
+        else if(closeTag==CLOSING_TAG(tagStruct.tagName)){
+            index--;
+            tagStruct.tagName =tagStruct.tagNames[index];
+            int size  =line.find_first_of('>');
+            line = line.substr(size);
+            
+            flagTags(0);
+            int pos = getIndex(0);
+        }
+        else
+        {   
+            text= text+current_char;
+            prev_char=current_char;
+            line =line.substr(1);
+            
+        }        
+        return extractTagText(line,index,text);
+    
     }
-    else
-    {
-        text+=line;
+
+    
+}
+
+/**
+ * @brief Flags the tag whether it is open or not 
+ *  0 - not open
+ * 1 - Open
+ * @param flag  int value (1 or 0)
+ */
+void tswlun002::flagTags(int flag){
+     int exists = getIndex(0);
+   
+    if(tagStruct.tagFlags.size()==0 || tagStruct.tagFlags.size()==exists){
+        tagStruct.tagFlags.push_back(1);
+    }else{
+        tagStruct.tagFlags.erase(tagStruct.tagFlags.begin()+(exists));
+        tagStruct.tagFlags.insert(tagStruct.tagFlags.begin()+exists,flag);
+        
     }
-    return text;
 }
 
 /**
@@ -228,8 +287,6 @@ int tswlun002::getIndex( int index){
 bool tswlun002::checkTags(std::string line){
     int value =(line.find(OPEN_TAG(tagStruct.tagName)) )!=std::string::npos;
     int value1 =(line.find(CLOSING_TAG(tagStruct.tagName)) )!=std::string::npos;
-
-    //std::cout<<line<<", "<<value<<value1<<", "<< OPEN_TAG(tagStruct.tagName)<<std::endl;
     return (value==1 || value1==1) ? true : false;
 }
 
@@ -240,12 +297,11 @@ bool tswlun002::checkTags(std::string line){
  */
 void tswlun002::storeTagData(){
     for(int i=0; i<tagStruct.tagNames.size(); i++){
-        std::string data  =tagStruct.tagNames[i]+", "+std::to_string(tagStruct.numberTagPairs[i])+", ";//+tagStruct.tagTexts[i];
-        std::cout<<data<<std::endl;
+        std::string data  =tagStruct.tagNames[i]+", "+std::to_string(tagStruct.numberTagPairs[i])+", "+tagStruct.tagTexts[i];
         tagStruct.tagData.push_back(data);
     }
 }
-/**
+/** 
 * @brief Write tags and its data to file 
 */
 void tswlun002::writeToFile(){

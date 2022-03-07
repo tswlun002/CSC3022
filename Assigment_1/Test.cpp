@@ -13,6 +13,10 @@ void clear(void); // clear shell command
 
 int main(){
 
+    for (int i =0; i<10; i++){
+        std::cout<<i<<"\n";
+    }
+
     std::string argv;
     for(;;){
         
@@ -20,10 +24,17 @@ int main(){
         std::getline(std::cin,argv);
 
         if(argv[0]=='r' && argv[2]!=' ' ){
+            
+            /*tswlun002::getStruct().tagNames.clear();
+            tswlun002::getStruct().tagName.clear();
+            tswlun002::getStruct().tagData.clear();
+            tswlun002::getStruct().numberTagPairs.clear();*/
+
+            //std::cout<<tswlun002::getStruct().tagData.size()<<std::endl;
             std::fstream file;
             //
             std::string filename = argv.substr(2);
-            std::cout<<filename<<std::endl;
+            //std::cout<<filename<<std::endl;
 
             //open file for reading
             file.open(filename,std::ios::in);
@@ -34,15 +45,18 @@ int main(){
 
             //read line of the file and put it into variable line
             while(getline(file,line)){
-                tswlun002::storeTagName(line,0);
-                //tswlun002:: storeTagText(line);
+                tswlun002::storeTagName(line);
+                //does not contain tag
+                
+                tswlun002:: storeTagText(line);
             
             }
             //close file
             file.close();
             
             //store data
-           tswlun002::storeTagData();
+            tswlun002::storeTagData();
+            //std::cout<<tswlun002::getStruct().tagData.size()<<std::endl;
             }
         }
         //print out tag names and data

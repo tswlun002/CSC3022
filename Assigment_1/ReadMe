@@ -1,0 +1,19 @@
+To compile code use command:
+$ make
+
+To Run code use command:
+$ make run
+
+user will prompted to enter option ( r , p, d, l) or c or q
+
+r  must be entered with text file name like : r file.txt
+
+p  is for printing to screen
+
+d is for outputing to file called tag.txt on the same directory
+
+l is for search, it must be entered with tag name like : l tagName
+
+c for cleaning shell command screen
+
+q is for quit program 

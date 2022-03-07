@@ -15,11 +15,18 @@ namespace tswlun002{
         std::vector<int> numberTagPairs;
         std::vector<std::string> tagTexts;
         std::vector<std::string> tagData;
+        std::vector<int> tagFlags;   //status indicator if tag is closed or not
     };
+     /**
+      * @brief Get the Struct instance
+      * 
+      * @return TagStruct 
+      */
+    TagStruct getStruct();
     /**
      * @brief function to store tag name into vector TagName
      */
-    int storeTagName(std::string line,int index);
+    int storeTagName(std::string line);
     /**
      * @brief Get the Tag Name object
      * @return vector<int> tag name
@@ -56,7 +63,15 @@ namespace tswlun002{
     * @param line  is the string 
     * @return string  tag text 
     */
-    std::string extractTagText(std::string line); 
+    std::string extractTagText(std::string line,int index,std::string text); 
+
+    /**
+     * @brief flats tag is open or closed 
+     *  0 - means closed 
+     * 1 - means open
+     * @param  flag - int 0  or 1
+     */
+    void flagTags(int flag);
 
     /**
      * @brief Get the Index tag name in a vector
