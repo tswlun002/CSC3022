@@ -35,10 +35,12 @@ FrameSequence::FrameSequence(void){
  * @param y_end    - end at y-axix
  */
 void  FrameSequence::setStartToEnd(int x_start,int y_start,int x_end,int y_end){
+    
     frameSequence.start_x=x_start;
     frameSequence.start_y=y_start;
     frameSequence.end_x=x_end;
     frameSequence.end_y=y_end;
+    //std::cout<<frameSequence.start_x<<"; "<<frameSequence.start_y<<std::endl;
 }
 
 /**
@@ -71,22 +73,24 @@ FrameSequence::~FrameSequence(){
  * If Flags vector size equals to 3 , we done reading information about data , we begin reading binary data from numberChars+3
  * 
  * @param filename 
- * @param frameSequenceObj 
  */
-void FrameSequence::readFile(std::string filename, FrameSequence frameSequenceObj){
-    frameSequence =frameSequenceObj;
+void FrameSequence::readFile(std::string filename){
+    //frameSequence =frameSequenceObj;
     std::ifstream infile(filename, std::ios::binary);
     std::string inputLine;
     int maxIntensity, num_of_rows,num_of_cols;
     bool right_file =false;
     std::vector<int> flags;
     int numberChars =0;
+    unsigned char * binaryData_oneDimension;
+    
     if(infile.is_open())
     {  
-
+        //std::cout<<"Reading.... "<<std::endl;
        while(getline(infile,inputLine)){
                 //check if it has P5 and start with P5
-            if(inputLine.length()==2 && inputLine== "P5" && flags.size()==0){
+         
+            if( inputLine== "P5" && flags.size()==0){
                 right_file=true;
 
                 numberChars += inputLine.length();
@@ -101,7 +105,7 @@ void FrameSequence::readFile(std::string filename, FrameSequence frameSequenceOb
                    iss>> num_of_rows >>std::ws>>num_of_cols;  //get rows and columns
 
                 }
-
+               
                 numberChars +=inputLine.length();
                 flags.push_back(1);
             }
@@ -119,19 +123,29 @@ void FrameSequence::readFile(std::string filename, FrameSequence frameSequenceOb
             
             else if(flags.size()==3)
             {   
-               
+                //std::cout<<"Read binary data .." <<std::endl;
               
-                int num_char =num_of_cols*num_of_rows;
-                char f[num_char/8];
+                int numberPixels =num_of_cols*num_of_rows;
+                binaryData_oneDimension =  new unsigned char[numberPixels];
+                
                 infile.seekg(numberChars+3,std::ios::beg);
                 int size = infile.tellg();
-                infile.read(f,num_char/8);
-                f[num_char/8]=0;
-                std::fstream file;
-                file.open("tag.txt",std::ios::out);
-                file<<f;
-                file.close();
+                
+                infile.read(reinterpret_cast<char *> (binaryData_oneDimension), (numberPixels)*sizeof(unsigned char));
+                
+                if(infile){
+                    std::cout<<"Done Reading file.Processing image frames..."<<std::endl;
+                    frameSequence.toTwoDimension(binaryData_oneDimension,num_of_rows,num_of_cols);
+                    
+                }
+                else{
+                    std::cout<<"Error at "<<infile.gcount()<<std::endl;
+                }
+                
+                delete [] binaryData_oneDimension;
+                std::cout<<"Done! "<<std::endl;
                 break;
+                
             }
         }
 
@@ -139,8 +153,106 @@ void FrameSequence::readFile(std::string filename, FrameSequence frameSequenceOb
 
     else
     {
-        std::cout<<"File Can not be found, enter correct name of the file"<< std::endl;     //if file does not open or exists,or entered wrong name
+        std::cout<<"File Can not be found, enter correct name of the file"<< std::endl; 
     }
     infile.close();
 }
+/**
+ * @brief Store binary data into 2-Dimension pointer from 1-Dimention 
+ * Store imageframe into vector imageSequence
+ * And delete dynamical allocated space of the original image
+ * @param binaryData_oneDimension  is the 1-dimensional pointer
+ * @param num_of_rows is the number of rows of the image
+ * @param  number_of_cols is the number of columns of the image
+ */
+void FrameSequence::toTwoDimension(unsigned char* binaryData_oneDimension,const int &num_of_rows,const int &num_of_cols){
+    unsigned char ** binaryData_twoDimension;
+  
+    binaryData_twoDimension =  new unsigned char *[num_of_rows];
+
+    for (int i =0 ; i<num_of_rows; i++){
+        binaryData_twoDimension[i] =  new unsigned char[num_of_cols];
+        for(int j=0 ; j<num_of_cols; j++){
+            binaryData_twoDimension[i][j]=binaryData_oneDimension[i*num_of_cols+j];
+        }
+    }
+   
+    ExtractImageFrame(binaryData_twoDimension,num_of_rows,num_of_cols,frameSequence.start_x,frameSequence.start_y);
+    std::cout<<"Number of image frames = "<<frameSequence.imageSequence.size()<<std::endl;
+    for(int j=0 ; j<num_of_rows; j++){
+            delete[] binaryData_twoDimension[j]; 
+        }
+    delete[] binaryData_twoDimension;
+  
+   
+} 
+
+/**
+ * @brief Extarct  binary data for imageFrames from large image 
+ * Get width image frame by adding width plus start x-axis
+ * Get height image frame by adding width plus start y-axis
+ * if start x-axis is less equals to end x-axis & start y-axis is less equals to end y-axis & x, y, size_row,size_col are still tha dimension large image
+ * Store last image frame into vector
+ * Else ,Start storing image frames using for loops
+ * Store image frame into vector
+ * Increment x and y coordinates for start to store another image frame
+ * @param binaryData_oneDimension  is the 2-dimensional pointer of the large image
+ * @param num_of_rows is the number of rows of the original large image
+ * @param  number_of_cols is the number of columns of the original large image
+ * @param x is the  start x-coordinate of the image frame
+ * @param y is the  y-coordinate of the image frame
+ */
+void FrameSequence::ExtractImageFrame(unsigned char** binaryData_twoDimension, int num_of_rows, int num_of_cols,int x, int y){
+    //std::cout<<x<<"; "<<y<<std::endl;
+    int size_row = frameSequence.width+x;
+    int size_col = frameSequence.height+y;
+     if ( x>=num_of_rows || y>=num_of_cols || size_row>=num_of_rows || size_col>=num_of_cols){
+         return;
+     }
+     else if(x==frameSequence.end_x && y==frameSequence.end_y &&frameSequence.end_x<num_of_rows &&frameSequence.end_y<num_of_cols ){
+        storeImageFrame(binaryData_twoDimension, frameSequence.width, frameSequence.height,x,y);
+        return;
+    }
+    else{
+        storeImageFrame(binaryData_twoDimension, frameSequence.width, frameSequence.height,x,y);
+        return ExtractImageFrame(binaryData_twoDimension,num_of_rows,num_of_cols,++x,++y);
+    }
+
+}
+/**
+ * @brief Start storing image frames using for loops
+ * Store image frame into vector
+ * Delete allocate space for store image frame 
+ * @param binaryData_twoDimension  is the 2-dimensional pointer of the large image
+ * @param size_row    width image frame
+ * @param size_col    height image frame
+ * @param x  is the  start x-coordinate of the image frame
+ * @param y  is the  start y-coordinate of the image frame
+ */
+void FrameSequence::storeImageFrame(unsigned char** binaryData_twoDimension, int size_row, int size_col,int x, int y){
+    unsigned char ** imageFrame; 
+    //std::cout<<x<<"; "<<y<<" "<<size_row<<" "<<size_col<<std::endl;
+    imageFrame = new unsigned char*[size_row];
+    for(int i=0; i<size_row;i++){
+        imageFrame[i] = new unsigned char[size_col];
+        for(int j=0; j<size_col;j++){
+            imageFrame[i][j]=binaryData_twoDimension[x+i][y+j];
+        }
+    }
+    
+    frameSequence.imageSequence.push_back(imageFrame);
+
+    for(int j=0 ; j<size_row; j++){
+        delete[] imageFrame[j]; 
+    }
+    delete[] imageFrame;
+}
+
+
+
+/**f[numberPixels/8]=0;
+                std::fstream file;
+                file.open("tag.txt",std::ios::out);
+                file<<f;
+                file.close();*/
 

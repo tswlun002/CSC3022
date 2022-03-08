@@ -39,17 +39,7 @@ namespace tswlun002{
          * 
          * @param file name of file we will use or read
          */
-        void readFile(std::string file,FrameSequence frameSequenceObj);
-        /**
-         * @brief Set the Image frame into image sequence vector
-         * @param imageFrame - 2-d array which has store pixels of the image
-         */
-        void setImageSequence(unsigned char ** imageFrame);
-        /**
-         * @brief Get the Image Sequence object
-         * @return std::vector<unsigned char **>  image Sequence
-         */
-        std::vector<unsigned char **> getImageSequence();
+        void readFile(std::string file);
 
         /**
          * @brief Set the Start To End image frame
@@ -65,9 +55,47 @@ namespace tswlun002{
          * @param height - height of image frame
          */
         void setFrameSize(int width, int height);
-
-         
+        /**
+         * @brief Set the Image frame into image sequence vector
+         * @param imageFrame - 2-d array which has store pixels of the image
+         */
+        
+        /**
+         * @brief Store binary data into 2-Dimension pointer from 1-Dimention
+         * 
+         * @param binaryData_oneDimension  is the 1-dimensional pointer
+         * @param num_of_rows is the number of rows of the image
+         * @param  number_of_cols is the number of columns of the image
+         */
+        void toTwoDimension(unsigned char* binaryData_oneDimension,const int &num_of_rows,const int &num_of_cols);
+        
+        /**
+         * @brief Extarct  binary data for imageFrames from large image 
+         * 
+         * @param binaryData_oneDimension  is the 2-dimensional pointer of the large image
+         * @param num_of_rows is the number of rows of the image
+         * @param  number_of_cols is the number of columns of the image
+         * @param x is the  x-coordinate
+         * @param y is the  y-coordinate
+         */
+        void ExtractImageFrame(unsigned char** binaryData_oneDimension, int num_of_rows, int num_of_cols,int x, int y);
+        /**
+         * @brief Store image frame into vector
+         * @param binaryData_twoDimension  is the 2-dimensional pointer of the large image
+         * @param size_row    width image frame
+         * @param size_col    height image frame
+         * @param x  is the  start x-coordinate of the image frame
+         * @param y  is the  start y-coordinate of the image frame
+         */
+        void storeImageFrame(unsigned char** binaryData_twoDimension, int size_row, int size_col, int x, int y);
+        void setImageSequence(unsigned char ** imageFrame);
+        /**
+         * @brief Get the Image Sequence object
+         * @return std::vector<unsigned char **>  image Sequence
+         */
+        std::vector<unsigned char **> getImageSequence();  
     };
+
     
 
 }
