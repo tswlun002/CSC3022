@@ -16,6 +16,7 @@ int main(int argc, char*argv[]){
         frameSequence.setFrameSize(atoi(argv[8]),atoi(argv[9]));
         frameSequence.readFile(argv[1]);
         
+        
     }
      return 0;
 }
