@@ -67,7 +67,7 @@ namespace tswlun002{
          * @param num_of_rows is the number of rows of the image
          * @param  number_of_cols is the number of columns of the image
          */
-        void toTwoDimension(unsigned char* binaryData_oneDimension,const int &num_of_rows,const int &num_of_cols);
+        void toTwoDimension(unsigned char* binaryData_oneDimension,int num_of_rows,int num_of_cols);
         
         /**
          * @brief Extarct  binary data for imageFrames from large image 
@@ -90,8 +90,18 @@ namespace tswlun002{
          * @param y  is the  start y-coordinate of the image frame
          */
         void storeImageFrame(unsigned char** binaryData_twoDimension,unsigned char ** imageFrame , int size_row, int size_col, int x, int y);
+        /**
+         * @brief write image frame to file to make pgm images
+         * @param imageSequence is the vector of image frames
+         */
+        void writeToFile(std::vector<unsigned char **> imageSequence);
+        
+        /**
+         * @brief invert pixels of the image frames to produce  new inverted images
+         * we use 255-v  to invert pixels, where v unsigned char pixel 
+         */
+        void invert();
 
-        void writeToFile();
         void setImageSequence(unsigned char ** imageFrame);
         /**
          * @brief Get the Image Sequence object

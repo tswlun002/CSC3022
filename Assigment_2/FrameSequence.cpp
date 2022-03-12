@@ -59,6 +59,13 @@ void FrameSequence::setFrameSize(int width, int height){
  *  vector imageframe to empty by clearing it
  */
 FrameSequence::~FrameSequence(){
+    int size = frameSequence.imageSequence.size();
+     for(int x=0 ;x<size;x++){
+        for (int i =0 ; i<frameSequence.height; i++){
+            delete[] frameSequence.imageSequence[x][i];
+        }
+        delete[] frameSequence.imageSequence[x];
+    }
     frameSequence.imageSequence.clear();
 }
 
@@ -134,7 +141,7 @@ void FrameSequence::readFile(std::string filename){
                 infile.read(reinterpret_cast<char *> (binaryData_oneDimension), (numberPixels)*sizeof(unsigned char));
                 
                 if(infile){
-                    //std::cout<<"Done Reading file.Processing image frames..."<<std::endl;
+                   std::cout<<num_of_rows<<" "<< num_of_cols<<std::endl;
                     frameSequence.toTwoDimension(binaryData_oneDimension,num_of_rows,num_of_cols);
                     
                 }
@@ -165,7 +172,7 @@ void FrameSequence::readFile(std::string filename){
  * @param num_of_rows is the number of rows of the image
  * @param  number_of_cols is the number of columns of the image
  */
-void FrameSequence::toTwoDimension(unsigned char* binaryData_oneDimension,const int &num_of_rows,const int &num_of_cols){
+void FrameSequence::toTwoDimension(unsigned char* binaryData_oneDimension,int num_of_rows,int num_of_cols){
     unsigned char ** binaryData_twoDimension;
   
     binaryData_twoDimension =  new unsigned char *[num_of_rows];
@@ -176,31 +183,60 @@ void FrameSequence::toTwoDimension(unsigned char* binaryData_oneDimension,const 
         }
     }
     unsigned char ** imageFrame; 
+    frameSequence.imageSequence.reserve(num_of_rows-(frameSequence.height-frameSequence.end_y));
+    
     ExtractImageFrame(binaryData_twoDimension,imageFrame,num_of_rows,num_of_cols,frameSequence.start_x,frameSequence.start_y);
     std::cout<<"Number of image frames = "<<frameSequence.imageSequence.size()<<std::endl;
-    writeToFile();
-    /*for(int j=0 ; j<frameSequence.width; j++){
-        delete[] imageFrame[j]; 
-    }
-    delete[] imageFrame;*/
+    writeToFile(frameSequence.imageSequence);
+    int size = frameSequence.imageSequence.size();
+
     for(int j=0 ; j<num_of_rows; j++){
             delete[] binaryData_twoDimension[j]; 
         }
     delete[] binaryData_twoDimension;
-   
-  
 } 
-void FrameSequence::writeToFile(){
+
+void FrameSequence::invert(){
+    int size = frameSequence.imageSequence.size();
+    int n =frameSequence.width*frameSequence.height;
+    unsigned char ** invertedFrames;
+    std::vector<unsigned char **> invertedImageSequence;
+    invertedImageSequence.reserve(size);
+  
+   
+    for(int x=0 ;x<size;x++){
+        invertedFrames =  new unsigned char *[frameSequence.height];
+        for (int i =0 ; i<frameSequence.height; i++){
+            invertedFrames[i] =  new unsigned char[frameSequence.width];
+            for(int j=0 ; j<frameSequence.width; j++){
+                invertedFrames[i][j]=255-frameSequence.imageSequence[x][i][j];
+            }
+        }
+        invertedImageSequence.push_back(invertedFrames);
+    }
+
+    writeToFile(invertedImageSequence);
+
+    for(int x=0 ;x<size;x++){
+        for (int i =0 ; i<frameSequence.height; i++){
+            delete[] invertedImageSequence[x][i];
+        }
+        delete[] invertedImageSequence[x];
+    }
+
+}
+void FrameSequence::writeToFile(std::vector<unsigned char **> imageSequence){
      
     int size = frameSequence.imageSequence.size();
     int n =frameSequence.width*frameSequence.height;
+    
     for(int x=0; x<size;x++){
 
         unsigned char * buffer = new unsigned char[n];
 
         for (int i =0 ; i<frameSequence.height; i++){
-            for(int j=0 ; j<frameSequence.width; j++){
-               // std::cout<<i<<"; "<<j<<" "<<(i*frameSequence.height+j)<<" "<<(frameSequence.imageSequence[x]==nullptr)<<std::endl;
+            for(int j=0;j<frameSequence.width; j++){
+                //std::cout<<i<<";"<<j<<" * "<<(i*frameSequence.width+j)<<" | "<<x<<std::endl;
                 buffer[i*frameSequence.width+j]=frameSequence.imageSequence[x][i][j];
             }
         }
@@ -210,7 +246,7 @@ void FrameSequence::writeToFile(){
         infile<<frameSequence.width<<" "<<frameSequence.height<<"\n";
         infile<<255<<"\n";
         
-        infile.write(  reinterpret_cast<char *>(buffer),n);
+        infile.write( reinterpret_cast<char *>(buffer),(n)*sizeof(unsigned char));
         if(infile){
             //std::cout<<"Done writing file"<<x<<std::endl;
         }
@@ -218,7 +254,7 @@ void FrameSequence::writeToFile(){
             std::cout<<"Error in file"<<x<<std::endl;
         }
         infile.close();
-        //delete[] buffer;
+        delete[] buffer;
 
     }
     
@@ -240,10 +276,10 @@ void FrameSequence::writeToFile(){
  * @param y is the  y-coordinate of the image frame
  */
 void FrameSequence::ExtractImageFrame(unsigned char** binaryData_twoDimension,unsigned char ** imageFrame, int num_of_rows, int num_of_cols,int x, int y){
-    //std::cout<<x<<"; "<<y<<std::endl;
-     int size_row = frameSequence.width+y;
-     int size_col = frameSequence.height+x;
-     if ( y>=num_of_rows || x>=num_of_cols||x>frameSequence.end_x || y>frameSequence.end_y||size_row>=num_of_rows || size_col>=num_of_cols ){
+    
+     int size_row = frameSequence.height+y;
+     int size_col = frameSequence.width+x;
+     if ( y>=num_of_rows || x>=num_of_cols||x>frameSequence.end_x || y>frameSequence.end_y || size_row>=num_of_rows|| size_col>= num_of_cols){
          return;
      }
      else if(x==frameSequence.end_x && y==frameSequence.end_y &&frameSequence.end_y<num_of_rows &&frameSequence.end_x<num_of_cols ){
@@ -253,7 +289,8 @@ void FrameSequence::ExtractImageFrame(unsigned char** binaryData_twoDimension,un
     }
     else{
         storeImageFrame(binaryData_twoDimension,imageFrame, frameSequence.height, frameSequence.width,x,y);
-        return ExtractImageFrame(binaryData_twoDimension,imageFrame,num_of_rows,num_of_cols,++x,++y);
+        ++x;++y;
+        return ExtractImageFrame(binaryData_twoDimension,imageFrame,num_of_rows,num_of_cols,x,y);
     }
 
 }
@@ -262,37 +299,26 @@ void FrameSequence::ExtractImageFrame(unsigned char** binaryData_twoDimension,un
  * Store image frame into vector
  * Delete allocate space for store image frame 
  * @param binaryData_twoDimension  is the 2-dimensional pointer of the large image
- * @param size_row    width image frame
- * @param size_col    height image frame
+ * @param height    width image frame
+ * @param width     height image frame
  * @param x  is the  start x-coordinate of the image frame
  * @param y  is the  start y-coordinate of the image frame
  */
-void FrameSequence::storeImageFrame(unsigned char** binaryData_twoDimension,unsigned char ** imageFrame, int size_row, int size_col,int x, int y){
+void FrameSequence::storeImageFrame(unsigned char** binaryData_twoDimension,unsigned char ** imageFrame, int height, int width,int x, int y){
     
-    //std::cout<<x<<"; "<<y<<" "<<size_row<<" "<<size_col<<std::endl;
-    imageFrame = new unsigned char*[size_row];
-    for(int i=0; i<size_row;i++){
-        imageFrame[i] = new unsigned char[size_col];
-        for(int j=0; j<size_col;j++){
+    
+    imageFrame = new unsigned char*[frameSequence.height];
+    for(int i=0; i<frameSequence.height;i++){
+        imageFrame[i] = new unsigned char[frameSequence.width];
+        for(int j=0; j<frameSequence.width;j++){
             imageFrame[i][j]=binaryData_twoDimension[x+i][y+j];
         }
     }
-    
     frameSequence.imageSequence.push_back(imageFrame);
-     
-
-    /*for(int j=0 ; j<size_row; j++){
-        delete[] imageFrame[j]; 
-    }
-    delete[] imageFrame;*/
-    //std::cout<<"Number of image frames = "<<frameSequence.imageSequence[0][0][0]<<std::endl;
+    
 }
 
 
 
-/**f[numberPixels/8]=0;
-                std::fstream file;
-                file.open("tag.txt",std::ios::out);
-                file<<f;
-                file.close();*/
+
 

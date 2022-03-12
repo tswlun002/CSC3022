@@ -6,4 +6,4 @@ for i in *.pgm;
   ffmpeg -i "$i" "${name}.png"
 done
 #make video
-ffmpeg -framerate 10 -pattern_type  glob -i "*.png" video.mp4
+ffmpeg -framerate 15 -pattern_type  glob -i "*.png" video.mp4

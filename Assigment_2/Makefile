@@ -1,7 +1,7 @@
 #This is a Makefile 
 CC=g++                  #the compiler name
 CCFLAGS=-std=c++2a      #flags passed to compiler
-TARGET= file.exe        #executable file
+TARGET= extractor        #executable file
 OBJECT= *.o             #binary file(s) 
 SOURCE= *.cpp           #cc++ file(s)
 
@@ -12,6 +12,7 @@ $(TARGET): $(OBJECT)
 #building rule
 $(OBJECT): $(SOURCE)
 	$(CC)	-c	$(SOURCE)	$(CCFLAGS)
+	#cp	/home/lunga/Desktop/CSC/CSC3022F/2022/examples/larger_image.pgm /home/lunga/Desktop/CSC/CSC3022F/2022/Assigment_2
 
 #execution rule 
 run:
@@ -21,5 +22,6 @@ run:
 clean:
 	@rm	-f	*.o 
 	@rm	-f	*.exe
-	@rm	-f	*.pgm
-	@rm	-f	*.png
+	#@rm	-f	*.pgm
+	#@rm	-f	*.png
+	@rm	-r	GENERATED_VIDEOS
