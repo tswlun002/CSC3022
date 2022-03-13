@@ -53,7 +53,17 @@ void FrameSequence::setFrameSize(int width, int height){
     frameSequence.width=width;
     frameSequence.height=height;
 }
-
+ /**
+ * @brief Set the Motion
+ * Motion can be horizontal, backwards , vertical,reverse,inverted, revinverted, invert
+ * @param movement is the motion of the video
+ */
+void FrameSequence::setMotion(std::string movement){
+    frameSequence.motion=movement;
+}
+void FrameSequence::setOutputFileName(std::string name){
+    frameSequence.ouputFileName=name;
+}
 /**
  * @brief Destroy the Frame Sequence:: Frame Sequence object
  *  vector imageframe to empty by clearing it
@@ -187,14 +197,20 @@ void FrameSequence::toTwoDimension(unsigned char* binaryData_oneDimension,int nu
     
     ExtractImageFrame(binaryData_twoDimension,imageFrame,num_of_rows,num_of_cols,frameSequence.start_x,frameSequence.start_y);
     std::cout<<"Number of image frames = "<<frameSequence.imageSequence.size()<<std::endl;
-    writeToFile(frameSequence.imageSequence);
-    int size = frameSequence.imageSequence.size();
+    /*writeToFile(frameSequence.imageSequence);
+    int size = frameSequence.imageSequence.size();*/
 
     for(int j=0 ; j<num_of_rows; j++){
             delete[] binaryData_twoDimension[j]; 
         }
     delete[] binaryData_twoDimension;
 } 
+/**
+ * @brief Make image frame of no modification of data
+ */
+void FrameSequence::none(){
+    writeToFile(frameSequence.imageSequence);
+}
 
 void FrameSequence::invert(){
     int size = frameSequence.imageSequence.size();
@@ -202,14 +218,13 @@ void FrameSequence::invert(){
     unsigned char ** invertedFrames;
     std::vector<unsigned char **> invertedImageSequence;
     invertedImageSequence.reserve(size);
-  
-   
+
     for(int x=0 ;x<size;x++){
         invertedFrames =  new unsigned char *[frameSequence.height];
         for (int i =0 ; i<frameSequence.height; i++){
             invertedFrames[i] =  new unsigned char[frameSequence.width];
             for(int j=0 ; j<frameSequence.width; j++){
-                invertedFrames[i][j]=255-frameSequence.imageSequence[x][i][j];
+                invertedFrames[i][j]= 255-frameSequence.imageSequence[x][i][j];
             }
         }
         invertedImageSequence.push_back(invertedFrames);
@@ -225,9 +240,85 @@ void FrameSequence::invert(){
     }
 
 }
-void FrameSequence::writeToFile(std::vector<unsigned char **> imageSequence){
-     
+/**
+ * @brief Reverse pixels of image frames  to make new image
+ * Read pointer array from last index to first index
+ * Write make images by invoking writeTofile method
+ * Delete temporay  dynamical allocated pointer called  invertedFrames
+ */
+void FrameSequence::reverse(){
     int size = frameSequence.imageSequence.size();
+    int n =frameSequence.width*frameSequence.height;
+    unsigned char ** invertedFrames;
+    std::vector<unsigned char **> invertedImageSequence;
+    invertedImageSequence.reserve(size);
+
+    for(int x=size-1 ;x>=0;--x){
+        invertedFrames =  new unsigned char *[frameSequence.height];
+        for (int i =frameSequence.height-1; i>=0; --i){
+            invertedFrames[i] =  new unsigned char[frameSequence.width];
+            for(int j=frameSequence.width-1 ; j>=0; --j){
+                
+                invertedFrames[i][j]= frameSequence.imageSequence[x][i][j];
+            }
+          
+        }
+        invertedImageSequence.push_back(invertedFrames);
+    }
+
+    writeToFile(invertedImageSequence);
+
+    for(int x=0 ;x<size;x++){
+        for (int i =0 ; i<frameSequence.height; i++){
+            delete[] invertedImageSequence[x][i];
+        }
+        delete[] invertedImageSequence[x];
+    }
+
+}
+
+/**
+ * @brief invert pixels then reverse them
+ * 
+ */
+void FrameSequence::revinvert(){
+    int size = frameSequence.imageSequence.size();
+    int n =frameSequence.width*frameSequence.height;
+    unsigned char ** revInvertedFrames;
+    std::vector<unsigned char **> revInvertedImageSequence;
+    revInvertedImageSequence.reserve(size);
+
+    for(int x=size-1 ;x>=0;--x){
+        revInvertedFrames =  new unsigned char *[frameSequence.height];
+        for (int i =frameSequence.height-1; i>=0; --i){
+            revInvertedFrames[i] =  new unsigned char[frameSequence.width];
+            for(int j=frameSequence.width-1 ; j>=0; --j){
+                revInvertedFrames[i][j]= 255-frameSequence.imageSequence[x][i][j];
+            }
+        }
+        revInvertedImageSequence.push_back(revInvertedFrames);
+    }
+
+     writeToFile(revInvertedImageSequence);
+
+    for(int x=0 ;x<size;x++){
+        for (int i =0 ; i<frameSequence.height; i++){
+            delete[] revInvertedImageSequence[x][i];
+        }
+        delete[] revInvertedImageSequence[x];
+    }
+    
+}
+
+
+/**
+ * @brief Write pixels to file  to make image frame for vidoe
+ * Convert 2-D image frames to 1-D pointer and write data to files
+ * @param imageSequence  vector of 2-D pointer  of image frames
+ */
+void FrameSequence::writeToFile(std::vector<unsigned char **> imageSequence){
+     std::cout<<"writing to file.."<<std::endl;
+    int size = imageSequence.size();
     int n =frameSequence.width*frameSequence.height;
     
     for(int x=0; x<size;x++){
@@ -237,11 +328,11 @@ void FrameSequence::writeToFile(std::vector<unsigned char **> imageSequence){
         for (int i =0 ; i<frameSequence.height; i++){
             for(int j=0;j<frameSequence.width; j++){
                 //std::cout<<i<<";"<<j<<" * "<<(i*frameSequence.width+j)<<" | "<<x<<std::endl;
-                buffer[i*frameSequence.width+j]=frameSequence.imageSequence[x][i][j];
+                buffer[i*frameSequence.width+j]=imageSequence[x][i][j];
             }
         }
     
-        std::ofstream infile(std::to_string(x)+".pgm",std::ios::binary);
+        std::ofstream infile(frameSequence.ouputFileName +"-"+std::to_string(x)+".pgm",std::ios::binary);
         infile<<"P5\n";
         infile<<frameSequence.width<<" "<<frameSequence.height<<"\n";
         infile<<255<<"\n";
@@ -279,17 +370,30 @@ void FrameSequence::ExtractImageFrame(unsigned char** binaryData_twoDimension,un
     
      int size_row = frameSequence.height+y;
      int size_col = frameSequence.width+x;
-     if ( y>=num_of_rows || x>=num_of_cols||x>frameSequence.end_x || y>frameSequence.end_y || size_row>=num_of_rows|| size_col>= num_of_cols){
+     if ( y>=num_of_rows || x>=num_of_cols /*||x>frameSequence.end_x || y>frameSequence.end_y*/ || size_row>=num_of_rows|| size_col>= num_of_cols){
          return;
      }
      else if(x==frameSequence.end_x && y==frameSequence.end_y &&frameSequence.end_y<num_of_rows &&frameSequence.end_x<num_of_cols ){
-    
-        storeImageFrame(binaryData_twoDimension,imageFrame, frameSequence.height, frameSequence.width,x,y);
+        if(frameSequence.motion !="BACKWARDS"){
+            storeImageFrame(binaryData_twoDimension,imageFrame, frameSequence.height, frameSequence.width,x,y);
+            return;
+        }
         return;
     }
     else{
         storeImageFrame(binaryData_twoDimension,imageFrame, frameSequence.height, frameSequence.width,x,y);
-        ++x;++y;
+        if(frameSequence.motion=="BACKWARDS"){
+            --x;--y;
+        }
+        else if(frameSequence.motion=="VERTICAL"){
+            x=0;++y;
+        }
+        else if(frameSequence.motion=="HORIZONTAL"){
+            ++x;y=0;
+        }
+        else{
+            ++x;++y;
+        }
         return ExtractImageFrame(binaryData_twoDimension,imageFrame,num_of_rows,num_of_cols,x,y);
     }
 
@@ -311,7 +415,12 @@ void FrameSequence::storeImageFrame(unsigned char** binaryData_twoDimension,unsi
     for(int i=0; i<frameSequence.height;i++){
         imageFrame[i] = new unsigned char[frameSequence.width];
         for(int j=0; j<frameSequence.width;j++){
-            imageFrame[i][j]=binaryData_twoDimension[x+i][y+j];
+            if(frameSequence.motion=="VERTICAL" ||frameSequence.motion=="HORIZONTAL")
+                imageFrame[i][j]=binaryData_twoDimension[y+i][x+j];
+            else
+                imageFrame[i][j]=binaryData_twoDimension[x+i][y+j];
+            
+            
         }
     }
     frameSequence.imageSequence.push_back(imageFrame);

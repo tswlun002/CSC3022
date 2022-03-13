@@ -19,6 +19,7 @@ namespace tswlun002{
          */
         std::vector<unsigned char **> imageSequence;
         int start_x,start_y,end_x,end_y, width,height;
+        std::string motion,ouputFileName;
 
     
         /**
@@ -61,6 +62,18 @@ namespace tswlun002{
          */
         
         /**
+         * @brief Set the Motion
+         * Motion can be horizontal, backwards , vertical,reverse,inverted, revinverted, invert
+         * @param movement is the motion of the video
+         */
+        void setMotion(std::string movement);
+        /**
+         * @brief Set the Output File Name 
+         * 
+         * @param name  of the ouput images
+         */
+        void setOutputFileName(std::string name);
+        /**
          * @brief Store binary data into 2-Dimension pointer from 1-Dimention
          * 
          * @param binaryData_oneDimension  is the 1-dimensional pointer
@@ -97,10 +110,24 @@ namespace tswlun002{
         void writeToFile(std::vector<unsigned char **> imageSequence);
         
         /**
+         * @brief make image frames with none process 
+         */
+          void none();
+        /**
          * @brief invert pixels of the image frames to produce  new inverted images
          * we use 255-v  to invert pixels, where v unsigned char pixel 
          */
         void invert();
+        /**
+         * @brief Reverse pixels of image frames  to make new image
+         */
+        void reverse();
+        
+        /**
+         * @brief invert pixels then reverse them
+         * 
+         */
+        void revinvert();
 
         void setImageSequence(unsigned char ** imageFrame);
         /**

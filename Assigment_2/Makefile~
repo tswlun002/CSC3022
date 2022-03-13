@@ -22,6 +22,6 @@ run:
 clean:
 	@rm	-f	*.o 
 	@rm	-f	*.exe
-	@rm	-f	*.pgm
-	@rm	-f	*.png
-	#@rm	-r	GENERATED_VIDEOS
+	#@rm	-f	*.pgm
+	#@rm	-f	*.png
+	@rm	-r	GENERATED_VIDEOS
