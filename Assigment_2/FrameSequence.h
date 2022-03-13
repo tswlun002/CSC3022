@@ -20,6 +20,7 @@ namespace tswlun002{
         std::vector<unsigned char **> imageSequence;
         int start_x,start_y,end_x,end_y, width,height;
         std::string motion,ouputFileName;
+        bool moveOnPath;
 
     
         /**
@@ -73,6 +74,13 @@ namespace tswlun002{
          * @param name  of the ouput images
          */
         void setOutputFileName(std::string name);
+        
+        /**
+         * @brief Set the Path if the motion will be through path or start-end
+         * 
+         * @param move is true or false 
+         */
+        void setPath(bool move);
         /**
          * @brief Store binary data into 2-Dimension pointer from 1-Dimention
          * 
@@ -128,13 +136,6 @@ namespace tswlun002{
          * 
          */
         void revinvert();
-
-        void setImageSequence(unsigned char ** imageFrame);
-        /**
-         * @brief Get the Image Sequence object
-         * @return std::vector<unsigned char **>  image Sequence
-         */
-        std::vector<unsigned char **> getImageSequence();  
     };
 
     

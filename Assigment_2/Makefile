@@ -16,12 +16,13 @@ $(OBJECT): $(SOURCE)
 
 #execution rule 
 run:
-	./file.exe
+	./exctractor
 
 #clean rule     
 clean:
 	@rm	-f	*.o 
-	@rm	-f	*.exe
+	@rm	-f	extractor
 	@rm	-f	*.pgm
 	@rm	-f	*.png
-	#@rm	-r	GENERATED_VIDEOS
+	@rm	-f	-r	GENERATED_VIDEOS
+	@rm	-f	*.mp4

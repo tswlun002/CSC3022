@@ -3,8 +3,6 @@
 #include <cstring>
 #include <sstream>
 #include <fstream>
-#define ROW
-#define COLUMN
 using namespace tswlun002;
 /**
  * @brief initialise object of FrameSequence
@@ -61,6 +59,10 @@ void FrameSequence::setFrameSize(int width, int height){
 void FrameSequence::setMotion(std::string movement){
     frameSequence.motion=movement;
 }
+/**
+ * @brief set name of the output images
+ * @param name name of the files 
+ */
 void FrameSequence::setOutputFileName(std::string name){
     frameSequence.ouputFileName=name;
 }
@@ -92,7 +94,6 @@ FrameSequence::~FrameSequence(){
  * @param filename 
  */
 void FrameSequence::readFile(std::string filename){
-    //frameSequence =frameSequenceObj;
     std::ifstream infile(filename, std::ios::binary);
     std::string inputLine;
     int maxIntensity, num_of_rows,num_of_cols;
@@ -103,10 +104,9 @@ void FrameSequence::readFile(std::string filename){
     
     if(infile.is_open())
     {  
-        //std::cout<<"Reading.... "<<std::endl;
+        
        while(getline(infile,inputLine)){
-                //check if it has P5 and start with P5
-         
+               
             if( inputLine== "P5" && flags.size()==0){
                 right_file=true;
 
@@ -140,8 +140,6 @@ void FrameSequence::readFile(std::string filename){
             
             else if(flags.size()==3)
             {   
-                //std::cout<<"Read binary data .." <<std::endl;
-              
                 int numberPixels =num_of_cols*num_of_rows;
                 binaryData_oneDimension =  new unsigned char[numberPixels];
                 
@@ -196,9 +194,6 @@ void FrameSequence::toTwoDimension(unsigned char* binaryData_oneDimension,int nu
     frameSequence.imageSequence.reserve(num_of_rows-(frameSequence.height-frameSequence.end_y));
     
     ExtractImageFrame(binaryData_twoDimension,imageFrame,num_of_rows,num_of_cols,frameSequence.start_x,frameSequence.start_y);
-    std::cout<<"Number of image frames = "<<frameSequence.imageSequence.size()<<std::endl;
-    /*writeToFile(frameSequence.imageSequence);
-    int size = frameSequence.imageSequence.size();*/
 
     for(int j=0 ; j<num_of_rows; j++){
             delete[] binaryData_twoDimension[j]; 
@@ -206,7 +201,8 @@ void FrameSequence::toTwoDimension(unsigned char* binaryData_oneDimension,int nu
     delete[] binaryData_twoDimension;
 } 
 /**
- * @brief Make image frame of no modification of data
+ * @brief Make image frame of no modification of data by
+ * just writing frame Images pixels at it is to file
  */
 void FrameSequence::none(){
     writeToFile(frameSequence.imageSequence);
@@ -279,7 +275,10 @@ void FrameSequence::reverse(){
 
 /**
  * @brief invert pixels then reverse them
- * 
+ * to invert , Subtract 255 to each pixel 
+ * to Reverse, read from last fram start from last pixel to first pixel of each frame
+ * Write to file 
+ * Delete dynamic allocated space 
  */
 void FrameSequence::revinvert(){
     int size = frameSequence.imageSequence.size();
@@ -314,6 +313,7 @@ void FrameSequence::revinvert(){
 /**
  * @brief Write pixels to file  to make image frame for vidoe
  * Convert 2-D image frames to 1-D pointer and write data to files
+ * delete 1-D buffer 
  * @param imageSequence  vector of 2-D pointer  of image frames
  */
 void FrameSequence::writeToFile(std::vector<unsigned char **> imageSequence){
@@ -327,7 +327,6 @@ void FrameSequence::writeToFile(std::vector<unsigned char **> imageSequence){
 
         for (int i =0 ; i<frameSequence.height; i++){
             for(int j=0;j<frameSequence.width; j++){
-                //std::cout<<i<<";"<<j<<" * "<<(i*frameSequence.width+j)<<" | "<<x<<std::endl;
                 buffer[i*frameSequence.width+j]=imageSequence[x][i][j];
             }
         }
@@ -338,10 +337,7 @@ void FrameSequence::writeToFile(std::vector<unsigned char **> imageSequence){
         infile<<255<<"\n";
         
         infile.write( reinterpret_cast<char *>(buffer),(n)*sizeof(unsigned char));
-        if(infile){
-            //std::cout<<"Done writing file"<<x<<std::endl;
-        }
-        else{
+        if(!infile){
             std::cout<<"Error in file"<<x<<std::endl;
         }
         infile.close();
@@ -355,11 +351,12 @@ void FrameSequence::writeToFile(std::vector<unsigned char **> imageSequence){
  * @brief Extarct  binary data for imageFrames from large image 
  * Get width image frame by adding width plus start x-axis
  * Get height image frame by adding width plus start y-axis
+ * if start or end is out bound by negetive, we let it to be zero
  * if start x-axis is less equals to end x-axis & start y-axis is less equals to end y-axis & x, y, size_row,size_col are still tha dimension large image
  * Store last image frame into vector
  * Else ,Start storing image frames using for loops
  * Store image frame into vector
- * Increment x and y coordinates for start to store another image frame
+ * Increment or decrement x and y coordinates for start to store another image frame
  * @param binaryData_oneDimension  is the 2-dimensional pointer of the large image
  * @param num_of_rows is the number of rows of the original large image
  * @param  number_of_cols is the number of columns of the original large image
@@ -367,33 +364,53 @@ void FrameSequence::writeToFile(std::vector<unsigned char **> imageSequence){
  * @param y is the  y-coordinate of the image frame
  */
 void FrameSequence::ExtractImageFrame(unsigned char** binaryData_twoDimension,unsigned char ** imageFrame, int num_of_rows, int num_of_cols,int x, int y){
-    
+      if(x<0){
+          x=0;
+      }
+      if(y<0){
+           y=0;
+      }
+      if(frameSequence.end_x<0){
+          frameSequence.end_x=0;
+      }
+      if(frameSequence.end_y<0){
+          frameSequence.end_y=0;
+      }
+      
+
      int size_row = frameSequence.height+y;
      int size_col = frameSequence.width+x;
-     if ( y>=num_of_rows || x>=num_of_cols /*||x>frameSequence.end_x || y>frameSequence.end_y*/ || size_row>=num_of_rows|| size_col>= num_of_cols){
+     if ( y>=num_of_rows || x>=num_of_cols || size_row>=num_of_rows|| size_col>= num_of_cols ){
          return;
      }
-     else if(x==frameSequence.end_x && y==frameSequence.end_y &&frameSequence.end_y<num_of_rows &&frameSequence.end_x<num_of_cols ){
-        if(frameSequence.motion !="BACKWARDS"){
-            storeImageFrame(binaryData_twoDimension,imageFrame, frameSequence.height, frameSequence.width,x,y);
-            return;
-        }
+    else if( (frameSequence.start_x!=frameSequence.end_x ||frameSequence.start_y!=frameSequence.end_y)  && (x==frameSequence.end_x && y==frameSequence.end_y) ){
+        return;
+    }
+    else if(frameSequence.start_x==frameSequence.end_x &&frameSequence.start_y==frameSequence.end_y){
+        storeImageFrame(binaryData_twoDimension,imageFrame, num_of_rows, num_of_cols,x,y);
         return;
     }
     else{
-        storeImageFrame(binaryData_twoDimension,imageFrame, frameSequence.height, frameSequence.width,x,y);
-        if(frameSequence.motion=="BACKWARDS"){
-            --x;--y;
+        storeImageFrame(binaryData_twoDimension,imageFrame,num_of_rows, num_of_cols,x,y);
+        if(x<frameSequence.end_x&&frameSequence.start_x<frameSequence.end_x){
+            ++x;
+        }else if(frameSequence.start_x==frameSequence.end_x&& x==frameSequence.end_x){
+            x=frameSequence.end_x;
         }
-        else if(frameSequence.motion=="VERTICAL"){
-            x=0;++y;
+        else if( frameSequence.start_x>frameSequence.end_x&&x>frameSequence.end_x) {
+            --x;
         }
-        else if(frameSequence.motion=="HORIZONTAL"){
-            ++x;y=0;
+        if(y<frameSequence.end_y  &&frameSequence.start_y<frameSequence.end_y){
+            ++y;
+            
         }
-        else{
-            ++x;++y;
+        else if(frameSequence.start_y==frameSequence.end_y && y==frameSequence.end_y){
+            y=frameSequence.end_y;
         }
+        else if( frameSequence.start_y>frameSequence.end_y&&y>frameSequence.end_y) {
+            --y;
+        }
+        
         return ExtractImageFrame(binaryData_twoDimension,imageFrame,num_of_rows,num_of_cols,x,y);
     }
 
@@ -403,27 +420,30 @@ void FrameSequence::ExtractImageFrame(unsigned char** binaryData_twoDimension,un
  * Store image frame into vector
  * Delete allocate space for store image frame 
  * @param binaryData_twoDimension  is the 2-dimensional pointer of the large image
- * @param height    width image frame
- * @param width     height image frame
+ * @param row    width image frame
+ * @param col     height image frame
  * @param x  is the  start x-coordinate of the image frame
  * @param y  is the  start y-coordinate of the image frame
  */
-void FrameSequence::storeImageFrame(unsigned char** binaryData_twoDimension,unsigned char ** imageFrame, int height, int width,int x, int y){
+void FrameSequence::storeImageFrame(unsigned char** binaryData_twoDimension,unsigned char ** imageFrame, int rows, int column,int x, int y){
     
     
     imageFrame = new unsigned char*[frameSequence.height];
+    int count =0;
+    int count1 =0;
     for(int i=0; i<frameSequence.height;i++){
         imageFrame[i] = new unsigned char[frameSequence.width];
         for(int j=0; j<frameSequence.width;j++){
-            if(frameSequence.motion=="VERTICAL" ||frameSequence.motion=="HORIZONTAL")
-                imageFrame[i][j]=binaryData_twoDimension[y+i][x+j];
-            else
-                imageFrame[i][j]=binaryData_twoDimension[x+i][y+j];
-            
-            
+            if(x+j<column && y+i<rows){
+                count=x+j; count1=y+i;
+                imageFrame[i][j]=binaryData_twoDimension[x+j][y+i];
+                
+            }  
         }
+        
     }
     frameSequence.imageSequence.push_back(imageFrame);
+
     
 }
 
