@@ -11,11 +11,11 @@ if [ $DEBUG -eq 0 ]; then
 fi
 
 EXE_NAME="extractor"
-IMAGE="/home/lunga/Desktop/CSC/CSC3022F/2022/examples/sloan_image.pgm"
+IMAGE="/home/lunga/Desktop/CSC/CSC3022F/2022/examples/larger_image.pgm"
 
 FRAME_SRC="."
 # Change this if you want the videos to longer/shorter
-FRAME_RATE=10
+FRAME_RATE=25
 # Set to 0 if you want to keep the frames
 KEEP_FRAMES=1
 # Set this to 0 if you want all of the generated mp4 send to their own directory called GENERATED_VIDEOS (Makes it easier to delete them)
@@ -39,22 +39,22 @@ FIVEPOINT_REV="5POINT_REVERSE"
 
 # Test Cases
 # Simple case (gradient=1)
-TEST_SIMPLE="./$EXE_NAME $IMAGE -t 0 0 300 300 -s 600 600 -w none $SIMPLE"
+TEST_SIMPLE="./$EXE_NAME $IMAGE -t 0 0 100 100 -s 600 600 -w none $SIMPLE"
 TEST_BACKWARDS="./$EXE_NAME $IMAGE -t 100 100 0 0 -s 100 100 -w none $BACKWARDS"
 TEST_VERTICAL="./$EXE_NAME $IMAGE -t 0 0 0 100 -s 100 100 -w none $VERTICAL"
 TEST_HORIZONTAL="./$EXE_NAME $IMAGE -t 0 0 100 0 -s 100 100 -w none $HORIZONTAL"
-TEST_REVERSE="./$EXE_NAME $IMAGE -t 0 0 300 300 -s 600 600 -w reverse $REVERSE"
-TEST_INVERT="./$EXE_NAME $IMAGE -t 0 0 300 300 -s 600 600 -w invert $INVERTED"
-TEST_REVINVERT="./$EXE_NAME $IMAGE -t 0 0 300 300 -s 600 600 -w revinvert $REVINVERT"
+TEST_REVERSE="./$EXE_NAME $IMAGE -t 0 0 100 100 -s 100 100 -w reverse $REVERSE"
+TEST_INVERT="./$EXE_NAME $IMAGE -t 0 0 100 100 -s 100 100 -w invert $INVERTED"
+TEST_REVINVERT="./$EXE_NAME $IMAGE -t 0 0 100 100 -s 100 100 -w revinvert $REVINVERT"
 TEST_MULTI="./$EXE_NAME $IMAGE -t 0 0 100 100 -s 100 100 -w reverse base1 -w none base2 -w invert base3 -w revinvert base4"
 
-#TEST_OVER="./$EXE_NAME $IMAGE -t 0 1850 0 1950 -s 100 100 -w none $OVER_BOUNDS"
-#TEST_NEGATIVE="./$EXE_NAME $IMAGE -t -10 -10 100 100 -s 100 100 -w none $NEGATIVE_COORDS"
-#TEST_ZERO="./$EXE_NAME $IMAGE -t 0 0 100 100 -s 0 0 -w none $ZERO_FRAMES"
+TEST_OVER="./$EXE_NAME $IMAGE -t 0 1850 0 1950 -s 100 100 -w none $OVER_BOUNDS"
+TEST_NEGATIVE="./$EXE_NAME $IMAGE -t -10 -10 100 100 -s 100 100 -w none $NEGATIVE_COORDS"
+TEST_ZERO="./$EXE_NAME $IMAGE -t 0 0 100 100 -s 0 0 -w none $ZERO_FRAMES"
 
-#TEST_3POINT="./$EXE_NAME $IMAGE -p 0 0 100 100 200 0 -s 100 100 -w none $THREEPOINT"
-#TEST_5POINT="./$EXE_NAME $IMAGE -p 0 0 100 100 200 0 300 100 400 0 -s 100 100 -w none $FIVEPOINT"
-#TEST_5POINT_REV="./$EXE_NAME $IMAGE -p 400 0 300 100 200 0 100 100 0 0 -s 100 100 -w none $FIVEPOINT_REV"
+TEST_3POINT="./$EXE_NAME $IMAGE -p 3 0 0 100 100 200 0 -s 100 100 -w none $THREEPOINT"
+TEST_5POINT="./$EXE_NAME $IMAGE -p 5 0 0 100 100 200 0 300 100 400 0 -s 100 100 -w none $FIVEPOINT"
+TEST_5POINT_REV="./$EXE_NAME $IMAGE -p 5 400 0 300 100 200 0 100 100 0 0 -s 100 100 -w none $FIVEPOINT_REV"
 
 #For Mastery Work
 
@@ -117,15 +117,15 @@ create_frame_sequence "$TEST_MULTI" $MULTI 400
 echo
 echo -e "\e[1;31m  Some of these tests might fail! \e[0m"
 echo
-#create_frame_sequence "$TEST_OVER" $OVER_BOUNDS 100
-#create_frame_sequence "$TEST_NEGATIVE" $NEGATIVE_COORDS 110
-#create_frame_sequence "$TEST_ZERO" $ZERO_FRAMES 100
+create_frame_sequence "$TEST_OVER" $OVER_BOUNDS 100
+create_frame_sequence "$TEST_NEGATIVE" $NEGATIVE_COORDS 110
+create_frame_sequence "$TEST_ZERO" $ZERO_FRAMES 100
 
 #Uncomment the following if you want to test the mastery work
-#echo ">>>>>>>>>>>>>>>>>>>>\e[1;31m Testing Mastery Work \e[0m<<<<<<<<<<<<<<<<<<<<<<<"
-#create_frame_sequence "$TEST_3POINT" $THREEPOINT 200
-#create_frame_sequence "$TEST_5POINT" $FIVEPOINT 400
-#create_frame_sequence "$TEST_5POINT_REV" $FIVEPOINT_REV 400
+echo ">>>>>>>>>>>>>>>>>>>>\e[1;31m Testing Mastery Work \e[0m<<<<<<<<<<<<<<<<<<<<<<<"
+create_frame_sequence "$TEST_3POINT" $THREEPOINT 200
+create_frame_sequence "$TEST_5POINT" $FIVEPOINT 400
+create_frame_sequence "$TEST_5POINT_REV" $FIVEPOINT_REV 400
 
 
 if [ $VID_DIR -eq 0 ]; then
