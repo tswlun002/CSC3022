@@ -12,7 +12,6 @@ $(TARGET): $(OBJECT)
 #building rule
 $(OBJECT): $(SOURCE)
 	$(CC)	-c	$(SOURCE)	$(CCFLAGS)
-	#cp	/home/lunga/Desktop/CSC/CSC3022F/2022/examples/larger_image.pgm /home/lunga/Desktop/CSC/CSC3022F/2022/Assigment_2
 
 #execution rule 
 run:
