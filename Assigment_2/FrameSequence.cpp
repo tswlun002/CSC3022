@@ -3,6 +3,7 @@
 #include <cstring>
 #include <sstream>
 #include <fstream>
+#include <cmath>
 using namespace tswlun002;
 /**
  * @brief initialise object of FrameSequence
@@ -158,7 +159,7 @@ void FrameSequence::readFile(std::string filename){
                 }
                 
                 delete [] binaryData_oneDimension;
-                std::cout<<"Done! "<<std::endl;
+    
                 break;
                 
             }
@@ -317,7 +318,6 @@ void FrameSequence::revinvert(){
  * @param imageSequence  vector of 2-D pointer  of image frames
  */
 void FrameSequence::writeToFile(std::vector<unsigned char **> imageSequence){
-     std::cout<<"writing to file.."<<std::endl;
     int size = imageSequence.size();
     int n =frameSequence.width*frameSequence.height;
     
@@ -391,7 +391,10 @@ void FrameSequence::ExtractImageFrame(unsigned char** binaryData_twoDimension,un
         return;
     }
     else{
+
         storeImageFrame(binaryData_twoDimension,imageFrame,num_of_rows, num_of_cols,x,y);
+
+
         if(x<frameSequence.end_x&&frameSequence.start_x<frameSequence.end_x){
             ++x;
         }else if(frameSequence.start_x==frameSequence.end_x&& x==frameSequence.end_x){
@@ -419,6 +422,9 @@ void FrameSequence::ExtractImageFrame(unsigned char** binaryData_twoDimension,un
  * @brief Start storing image frames using for loops
  * Store image frame into vector
  * Delete allocate space for store image frame 
+ * If diference in y1-y2 is  0 , accelerate on the y-axis
+ * If diference in x1-x2 is 0, accelerate on the x-axis
+ * Else accelerate both axis
  * @param binaryData_twoDimension  is the 2-dimensional pointer of the large image
  * @param row    width image frame
  * @param col     height image frame
@@ -429,22 +435,58 @@ void FrameSequence::storeImageFrame(unsigned char** binaryData_twoDimension,unsi
     
     
     imageFrame = new unsigned char*[frameSequence.height];
-    int count =0;
-    int count1 =0;
+    
+
+    int temporalAcceleration = accelerateframes();
     for(int i=0; i<frameSequence.height;i++){
         imageFrame[i] = new unsigned char[frameSequence.width];
         for(int j=0; j<frameSequence.width;j++){
-            if(x+j<column && y+i<rows){
-                count=x+j; count1=y+i;
-                imageFrame[i][j]=binaryData_twoDimension[x+j][y+i];
-                
-            }  
+            
+            if(y+i+temporalAcceleration<column&&frameSequence.start_x-frameSequence.end_x==0 && frameSequence.start_y != frameSequence.end_y)
+                imageFrame[i][j]=binaryData_twoDimension[y+i+temporalAcceleration][x+j];
+            else if(x+j+temporalAcceleration<column&&frameSequence.start_x!=frameSequence.end_x && frameSequence.start_y == frameSequence.end_y)
+                imageFrame[i][j]=binaryData_twoDimension[y+i][x+j+temporalAcceleration];
+            else{
+                    if(x+j+temporalAcceleration<column && y+i+temporalAcceleration<rows)
+                    imageFrame[i][j]=binaryData_twoDimension[y+i+temporalAcceleration][x+j+temporalAcceleration];
+            }
         }
-        
     }
+    
     frameSequence.imageSequence.push_back(imageFrame);
 
     
+}
+/**
+ * @brief initialise the maximum acceleration
+ * 
+ * @param MaxAccelaretion is the maximum acceleration and defaulted at zero
+ */
+void FrameSequence::setAccelarationFrames(int MaxAccelaretion=0){
+    frameSequence.acceleration=0;
+    if(MaxAccelaretion>0){
+        frameSequence.maxAcceleration=MaxAccelaretion;
+         
+    }
+    else{
+        frameSequence.maxAcceleration=0;
+    }
+}
+/**
+ * @brief Calculate acceleration of the video
+ * If maximum acceleration is not reached , we increment acceleration by 4
+ * Else if we reached maximum acceleration , decrease by 4 until 2
+ * @return int acceleration calculated
+ */
+int FrameSequence::accelerateframes(){
+    if(frameSequence.maxAcceleration>0 && (frameSequence.acceleration<frameSequence.maxAcceleration ||frameSequence.acceleration<2)){
+        frameSequence.acceleration+=4; 
+    }
+    else if(frameSequence.maxAcceleration>0 && frameSequence.acceleration<frameSequence.maxAcceleration){
+        frameSequence.acceleration-=4;
+    } 
+    return frameSequence.acceleration;
+
 }
 
 
