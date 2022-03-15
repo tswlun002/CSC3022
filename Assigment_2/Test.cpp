@@ -15,8 +15,19 @@ int main(int argc, char*argv[]){
     //store path or start-End
     std::vector<int> path;
 
-    //initialise  motion
-    frameSequence.setMotion(argv[argc-1]);
+    //initialise  motion by argv[argc-4] if acceleration is given else by argv[argc-1] and acceleration by argv[argc-1]
+    if(argv[argc-2][1]=='a'){
+        frameSequence.setMotion(argv[argc-4]);
+        frameSequence.setAccelarationFrames(atoi(argv[argc-1]));
+        argc=argc-2;
+    }
+    else
+    {
+        frameSequence.setMotion(argv[argc-1]);
+        frameSequence.setAccelarationFrames(0);
+    }
+
+    
     
     //If  contains t , we use start to start - End  coordinates
     if(argv[2][1]=='t'){ 
@@ -42,7 +53,7 @@ int main(int argc, char*argv[]){
     
     //Loop per number of path points or start-end system
     int jump=0;
-    for(int i=0; i<n;){
+    for(int i=0; i<n-1;){
         
         /**After s, initialise size of image frames
         *If we use path points, we use first points as initial points ans next  until XnYn
@@ -72,7 +83,6 @@ int main(int argc, char*argv[]){
         for( int count =0;count<processes.size();count++){
             int v =n*2+index+3;
             if(argv[v][1]=='w'&& processes[count]=="none"){
-                std::cout<<"Okay lunga"<<std::endl;
                 frameSequence.setOutputFileName(processesNames[count]);
                 frameSequence.none();
             }
