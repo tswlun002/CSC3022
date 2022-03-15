@@ -11,15 +11,15 @@ if [ $DEBUG -eq 0 ]; then
 fi
 
 EXE_NAME="extractor"
-IMAGE="/home/lunga/Desktop/CSC/CSC3022F/2022/examples/larger_image.pgm"
+IMAGE="sloan_image.pgm"
 
 FRAME_SRC="."
 # Change this if you want the videos to longer/shorter
-FRAME_RATE=25
+FRAME_RATE=24
 # Set to 0 if you want to keep the frames
 KEEP_FRAMES=1
 # Set this to 0 if you want all of the generated mp4 send to their own directory called GENERATED_VIDEOS (Makes it easier to delete them)
-VID_DIR=1
+VID_DIR=0
 # Frame Sequence Names (You can change thee names if you'd like)
 SIMPLE="SIMPLE"
 BACKWARDS="BACKWARDS"
@@ -39,14 +39,14 @@ FIVEPOINT_REV="5POINT_REVERSE"
 
 # Test Cases
 # Simple case (gradient=1)
-TEST_SIMPLE="./$EXE_NAME $IMAGE -t 0 0 100 100 -s 600 600 -w none $SIMPLE"
+TEST_SIMPLE="./$EXE_NAME $IMAGE -t 0 0 100 100 -s 100 100 -w none $SIMPLE -a 150"
 TEST_BACKWARDS="./$EXE_NAME $IMAGE -t 100 100 0 0 -s 100 100 -w none $BACKWARDS"
 TEST_VERTICAL="./$EXE_NAME $IMAGE -t 0 0 0 100 -s 100 100 -w none $VERTICAL"
 TEST_HORIZONTAL="./$EXE_NAME $IMAGE -t 0 0 100 0 -s 100 100 -w none $HORIZONTAL"
 TEST_REVERSE="./$EXE_NAME $IMAGE -t 0 0 100 100 -s 100 100 -w reverse $REVERSE"
 TEST_INVERT="./$EXE_NAME $IMAGE -t 0 0 100 100 -s 100 100 -w invert $INVERTED"
 TEST_REVINVERT="./$EXE_NAME $IMAGE -t 0 0 100 100 -s 100 100 -w revinvert $REVINVERT"
-TEST_MULTI="./$EXE_NAME $IMAGE -t 0 0 100 100 -s 100 100 -w reverse base1 -w none base2 -w invert base3 -w revinvert base4"
+TEST_MULTI="./$EXE_NAME $IMAGE -t 0 0 100 100 -s 100 100 -w none base1 -w reverse base2 -w invert base3 -w revinvert base4 -a 200"
 
 TEST_OVER="./$EXE_NAME $IMAGE -t 0 1850 0 1950 -s 100 100 -w none $OVER_BOUNDS"
 TEST_NEGATIVE="./$EXE_NAME $IMAGE -t -10 -10 100 100 -s 100 100 -w none $NEGATIVE_COORDS"
@@ -106,7 +106,7 @@ pwd
 echo "Executable Name: $EXE_NAME"
 echo
 echo "Attempting Simple Test Case"
-create_frame_sequence "$TEST_SIMPLE" $SIMPLE 200
+create_frame_sequence "$TEST_SIMPLE" $SIMPLE 100
 create_frame_sequence "$TEST_BACKWARDS" $BACKWARDS 100
 create_frame_sequence "$TEST_VERTICAL" $VERTICAL 100
 create_frame_sequence "$TEST_HORIZONTAL" $HORIZONTAL 100
