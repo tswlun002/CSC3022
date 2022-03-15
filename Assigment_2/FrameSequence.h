@@ -16,11 +16,16 @@ namespace tswlun002{
          * end_y - y co-ordinate where we stop to store frame at y-axis
          * Width - distance between start_x to end_x
          * height - distance between start_y to end_y
+         * motion - store motion which can be VERTICAL, HORIZONTAL, REVERSED ,ETC
+         * outputFileName - store file name
+         * maxAcceleration - stores maximum acceleration of video
+         * acceleration - store incrementing acceleration
          */
         std::vector<unsigned char **> imageSequence;
         int start_x,start_y,end_x,end_y, width,height;
         std::string motion,ouputFileName;
         bool moveOnPath;
+        int maxAcceleration,acceleration;
 
     
         /**
@@ -136,6 +141,17 @@ namespace tswlun002{
          * 
          */
         void revinvert();
+        /**
+         * @brief set Acceleration frames 
+         * increase speed from start to end of frame pixels
+         * @param MaxAcceleration  Maximum acceleration
+         */
+        void setAccelarationFrames(int MaxAcceleration);
+         /**
+          * @brief calculate acceleration
+          * @return int acceleration
+          */
+        int accelerateframes();
     };
 
     
