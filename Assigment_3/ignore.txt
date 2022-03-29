@@ -1,0 +1,10 @@
+#ignore all object file
+*.o
+*.exe
+
+#ignore all image
+*.pgm
+*.PNG
+*.txt
+# Office Temp Files
+~$*
