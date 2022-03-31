@@ -9,8 +9,8 @@ namespace tswlun002{
      private:
          /* data */
          int numberPixels_component;
-         int component_identifier;
-         std::vector< std::pair<int,int> > pixels_coordinates;
+         int* component_identifier;
+         std::vector<std::vector<std::pair<int,int>>> pixels_coordinates;
      public:
          /**
           * @brief Default construct
@@ -19,7 +19,7 @@ namespace tswlun002{
          /**
           * @brief Construct a new Connected Component object
           */
-         ConnectedComponent(int numberPixels, int identifier);
+         ConnectedComponent(const int numberPixels, const int identifier);
          /**
           * @brief copy Construct for Connected Component object
           */
@@ -41,28 +41,28 @@ namespace tswlun002{
           * @param y - co-ordinate
           * @param x - co-ordinate 
           */
-        void  setPixelCordinates(int y, int x);
+        void  setPixelCordinates(const std::vector<std::pair<int,int>>coOrdinate_component);
         /**
          * @brief Get the Pixel Cordinates object
          * @return std::vector<std::pair<int, int>>  pixel co-ordinates
          */
-         std::vector<std::pair<int, int>> getPixelCordinates();
+         std::vector<std::vector<std::pair<int,int>>> getPixelCordinates()const;
          /**
           * @brief Set the Number Pixel Component object
           */
-         void setNumberPixelComponent(int value);
+         void setNumberPixelComponent(const int value);
          /**
           * @brief Get the Number Pixel Component object
           */
-         int getNumberPixelComponent();
+         int getNumberPixelComponent()const;
          /**
           * @brief Set the Component Identifier object
           */
-         void setComponentIdentifier(int id);
+         void setComponentIdentifier(const int id);
          /**
           * @brief Get the Identifier object
           */
-         int getIdentifier();
+         int* getIdentifier()const;
          /**
           * @brief Destroy the Connected Component object
           */

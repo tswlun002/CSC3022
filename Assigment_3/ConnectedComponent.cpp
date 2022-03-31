@@ -1,18 +1,21 @@
 #include "ConnectedComponent.h"
 using namespace tswlun002;
- ConnectedComponent::ConnectedComponent(): numberPixels_component(0),component_identifier(0){
-            pixels_coordinates.clear();
-    }
-    ConnectedComponent::ConnectedComponent(int numberPixels, int identifier): numberPixels_component(numberPixels),
-    component_identifier(identifier){
+ConnectedComponent::ConnectedComponent(): numberPixels_component(0),component_identifier(nullptr){
         pixels_coordinates.clear();
-    }
+}
+ConnectedComponent::ConnectedComponent(int numberPixels, int identifier): numberPixels_component(numberPixels),
+component_identifier(new int(identifier)){
+    pixels_coordinates.clear();
+}
 
-    ConnectedComponent::ConnectedComponent(const ConnectedComponent& other):
-    numberPixels_component(other.numberPixels_component),component_identifier(other.component_identifier)
-    {
-        pixels_coordinates.clear();
+ConnectedComponent::ConnectedComponent(const ConnectedComponent& other):
+numberPixels_component(other.numberPixels_component),component_identifier(nullptr)
+{
+    pixels_coordinates.clear();
+    if(other.component_identifier!=nullptr){
+        component_identifier = new int(*other.component_identifier);
     }
+}
 ConnectedComponent::ConnectedComponent(ConnectedComponent&& other):numberPixels_component(other.numberPixels_component),
 component_identifier(other.component_identifier),pixels_coordinates(std::move(other.pixels_coordinates))
 {
@@ -23,25 +26,32 @@ component_identifier(other.component_identifier),pixels_coordinates(std::move(ot
 ConnectedComponent& ConnectedComponent::operator=(const ConnectedComponent& other  ){
     if(this!= &other){
         this->numberPixels_component=other.numberPixels_component;
-        this->component_identifier=other.component_identifier;
         this->pixels_coordinates=other.pixels_coordinates;
+        if(this->component_identifier !=nullptr){
+            delete this->component_identifier;
+            this->component_identifier =nullptr;
+        }
+        if(other.component_identifier !=nullptr){
+            this->component_identifier = new int(*other.component_identifier);
+            
+        }    
     }
 
     return *this;
 }
 ConnectedComponent& ConnectedComponent::operator=(ConnectedComponent&& other){
     if(this != &other){
-            this->numberPixels_component=other.numberPixels_component;
-            this->component_identifier=other.component_identifier;
-            other.component_identifier=0;
-            other.numberPixels_component=0;
-        if(!this->pixels_coordinates.empty()){
-            this->pixels_coordinates.clear();
+        this->numberPixels_component=other.numberPixels_component;
+        this->pixels_coordinates=other.pixels_coordinates;
+        if(this->component_identifier !=nullptr){
+            delete this->component_identifier;
+            this->component_identifier =nullptr;
         }
-
-        if(!other.pixels_coordinates.empty()){
-            this->pixels_coordinates= std::move(other.pixels_coordinates);
+        if(other.component_identifier !=nullptr){
+            this->component_identifier = other.component_identifier;
             other.pixels_coordinates.clear();
+            other.numberPixels_component=0;
+            other.component_identifier=nullptr;
             
         }
     }
@@ -53,15 +63,15 @@ ConnectedComponent& ConnectedComponent::operator=(ConnectedComponent&& other){
  * @param y - co-ordinate
  * @param x - co-ordinate 
  */
-void  ConnectedComponent::setPixelCordinates(int y, int x){
-    pixels_coordinates.push_back(std::pair(x,y));
+void  ConnectedComponent::setPixelCordinates(const std::vector<std::pair<int,int>>coOrdinate_component){
+    pixels_coordinates.push_back(coOrdinate_component);
 }
 /**
  * @brief Get the Pixel Cordinates object
  * 
  * @return std::vector<std::pair<int, int>> 
  */
-std::vector<std::pair<int, int>> ConnectedComponent::getPixelCordinates(){
+std::vector<std::vector<std::pair<int,int>>> ConnectedComponent::getPixelCordinates()const{
     return pixels_coordinates;
 }
 
@@ -69,14 +79,14 @@ std::vector<std::pair<int, int>> ConnectedComponent::getPixelCordinates(){
  * @brief Set the Number Pixel Component object
  * @param value - int number of pixels 
  */
-void  ConnectedComponent::setNumberPixelComponent(int value){
+void  ConnectedComponent::setNumberPixelComponent(const int value){
     numberPixels_component=value;
 }
 /**
  * @brief Get the Number Pixel Component object
  * @return int number connent pixels for the component
  */
-int  ConnectedComponent::getNumberPixelComponent(){
+int  ConnectedComponent::getNumberPixelComponent()const{
     return numberPixels_component;
 }
 
@@ -84,13 +94,20 @@ int  ConnectedComponent::getNumberPixelComponent(){
  * @brief Set the Component Identifier object
  * @param id - int identifier
  */
-void ConnectedComponent::setComponentIdentifier(int id){
-    component_identifier=id;
+void ConnectedComponent::setComponentIdentifier(const int id){
+    component_identifier= new int(id);
 }
 /**
  * @brief Get the Identifier object
  * @return int identifier 
  */
-int ConnectedComponent::getIdentifier(){
+int* ConnectedComponent::getIdentifier()const{
     return component_identifier;
+}
+/**
+ * @brief Destroy the Connected Component object
+ */
+ConnectedComponent::~ConnectedComponent(){
+    if(this->component_identifier!=nullptr)
+        delete this->component_identifier;
 }

@@ -20,4 +20,4 @@ run:
 #clean rule     
 clean:
 	@rm	-f	*.o 
-	@rm	-f	extractor
+	@rm	-f	findcomp
