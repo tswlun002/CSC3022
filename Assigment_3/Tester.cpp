@@ -85,3 +85,41 @@ TEST_CASE("Test writeComponent"){
     println("Test WriteComponent");
     REQUIRE(writeFile("NN",object)==1);
 }
+int testGetComponentCount(PGMimageProcessor &object){
+    int value = object.getComponentCount();
+    println("Final components count =" +std::to_string(value));
+    return value;
+}
+
+/**
+ * @brief test getComponentCount
+ * 
+ */
+TEST_CASE(" test getComponentCount"){
+    REQUIRE(testGetComponentCount(object)==2);
+}
+int testgetLargestSize(PGMimageProcessor &object){
+    int value = object.getLargestSize();
+    println("Large components size = " +std::to_string(value));
+    return value;
+}
+/**
+ * @brief test getComponentCount
+ * 
+ */
+TEST_CASE(" test getLargestSize"){
+    REQUIRE(testgetLargestSize(object)< 6000);
+}
+
+int testgetSmallestSize(PGMimageProcessor &object){
+    int value = object.getSmallestSize();
+    println("Small components size = " +std::to_string(value));
+    return value;
+}
+/**
+ * @brief test getComponentCount
+ * 
+ */
+TEST_CASE(" test getSmallestSize"){
+    REQUIRE(testgetSmallestSize(object)< 5000);
+}

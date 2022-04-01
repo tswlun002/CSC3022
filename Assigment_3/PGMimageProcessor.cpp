@@ -197,17 +197,14 @@ void PGMimageProcessor::storeComponents(){
 
 int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSize){
 
-    connectedComponent.getPixelCordinates().clear();
-    connectedComponent.getPixelCordinates().shrink_to_fit();
+    componetsList.clear();
+    componetsList.shrink_to_fit();
 
     valid_data = std::vector(height, std::vector<unsigned char>(width));
     extractOnThreshHoldComponent(threshold, valid_data);
-    //writeToFile(valid_data);
     findComponent(valid_data,threshold,minValidSize,connectedComponent);
 
- 
-
-    return connectedComponent.getPixelCordinates().size();
+    return componetsList.size();
 
 }
 /**
@@ -254,7 +251,7 @@ void PGMimageProcessor::findComponent(_2D_vector& data,const int threshold,const
                     connectedComponent.setComponentIdentifier(count);
                     connectedComponent.setPixelCordinates(coOrdinate_component);
                     connectedComponent.setNumberPixelComponent(numberComponents);
-                    //connectedComponent.setNumberComponent(std::make_pair(count,numberComponents));
+                    storeComponents();
                     ++count;
                     
                 }
@@ -336,15 +333,16 @@ void PGMimageProcessor::findComponent(_2D_vector& data,const int threshold,const
  */
 int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize){
    
-   std::vector<std::vector<std::pair<int,int>>> componets =connectedComponent.getPixelCordinates();
+   std::vector<std::vector<std::pair<int,int>>> componets =componetsList;
    
-   connectedComponent.getPixelCordinates().clear();
-   connectedComponent.getPixelCordinates().shrink_to_fit();
+   componetsList.clear();
+   componetsList.shrink_to_fit();
    int size =componets.size();
   
    for(int i=0; i<size; i++){
        if(componets[i].size()>=minSize && componets[i].size()<=maxSize){
            connectedComponent.setPixelCordinates(componets[i]);
+           storeComponents();
        }else{
            for(int j=0; j<componets[i].size(); j++){
                  int x  = componets[i][j].first;
@@ -353,7 +351,7 @@ int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize){
            }
        }
    }
-   return connectedComponent.getPixelCordinates().size();
+   return componetsList.size();
 }
 
 
@@ -367,7 +365,7 @@ int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize){
  */
 bool PGMimageProcessor::writeComponents(const std::string & outFileName){
     std::shared_ptr<unsigned char[]> buffer(new unsigned char[width*height]);
-    std::vector<std::vector<std::pair<int,int>>> data =connectedComponent.getPixelCordinates();
+    std::vector<std::vector<std::pair<int,int>>> data =componetsList;
     int n = width*height;
     int size = data.size();
     
@@ -398,44 +396,45 @@ bool PGMimageProcessor::writeComponents(const std::string & outFileName){
  * @brief Get the Component Count 
  */
 int PGMimageProcessor::getComponentCount(void) const{
-    std::vector<std::vector<std::pair<int,int>>> componets =connectedComponent.getPixelCordinates();
-    return componets.size();
+    return componetsList.size();
+}
+/**
+ * @brief  return number of pixels in largest component
+ */
+int PGMimageProcessor::getLargestSize(void) const{
+    if(!componetsList.empty()){
+        int prev_componentsize  = componetsList[0].size();
+        for(int i=1; i<componetsList.size();i++){
+            int next_componentSize=componetsList[i].size();
+            if(prev_componentsize<next_componentSize)
+                prev_componentsize=next_componentSize;
+            else
+                prev_componentsize=prev_componentsize;
+        }
+        return prev_componentsize;
+
+    }
+    else
+        return 0;
 }
 
- // Base cases 
-   
-   /* if (x < 0 || x >= width || y < 0 || y >= height){ 
-        println("note0 "+std::to_string(x)+" "+std::to_string(y));
-        return count;
-    }
-   
-    if (data[y][x] == currePixel) {
-        println("note01 "+std::to_string(x)+" "+std::to_string(y));
-        return count;
-    }
-    
-    else{
-         println("note1 "+std::to_string(x)+" "+std::to_string(y));
-        data[y][x] = currePixel; 
-        // println("note2 "+std::to_string(x)+" "+std::to_string(y));
-        coOrdinates.push_back(std::make_pair(x,y));
-        //println("note3 "+std::to_string(x)+" "+std::to_string(y));
-        count++;
-        // println("note4 "+std::to_string(x)+" "+std::to_string(y));
-        // Recursively call for north, east, south and west 
-        int right=x+1;
-        int left=x-1;
-        int up =y+1;
-        int down =y-1;
-         //println("note10 "+std::to_string(count)+" "+std::to_string(currePixel));
-         int r =floodFill(data,right, y, currColor, currePixel, coOrdinates,count);  count=0;
-        println("note2 "+std::to_string(x)+" "+std::to_string(y));
-        
-        int l=floodFill(data, left, y, currColor, currePixel,coOrdinates,count);    count=0; println("note6 "+std::to_string(x)+" "+std::to_string(y));
-        int u= floodFill(data, x, up, currColor, currePixel,coOrdinates,count);  count=0; println("note7 "+std::to_string(x)+" "+std::to_string(y));
-        int d= floodFill(data, x, down, currColor, currePixel,coOrdinates,count); count=0; println("note8 "+std::to_string(x)+" "+std::to_string(y));
-        // println("note5 "+std::to_string(x)+" "+std::to_string(y));
-        return r+l+u+d;
-    }*/
+/**
+ * @return  number of pixels in smallest component
+ */
+int PGMimageProcessor::getSmallestSize(void) const{
+    if(!componetsList.empty()){
+        int prev_componentsize  = componetsList[0].size();
+        for(int i=1; i<componetsList.size();i++){
+            int next_componentSize=componetsList[i].size();
+            if(prev_componentsize<next_componentSize)
+                prev_componentsize=prev_componentsize;
+            else
+                prev_componentsize=next_componentSize;
+        }
+        return prev_componentsize;
 
+    }
+    else
+        return 0;
+}
 

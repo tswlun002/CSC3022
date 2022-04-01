@@ -124,6 +124,15 @@ namespace tswlun002
          * @brief Get the Component Count 
          */
         int getComponentCount(void) const;
+
+        /**
+         * @brief  return number of pixels in largest component
+         */
+        int getLargestSize(void) const;
+        /**
+         * @return  number of pixels in smallest component
+         */
+        int getSmallestSize(void) const;
     };
     
     

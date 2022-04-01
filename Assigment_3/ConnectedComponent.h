@@ -60,7 +60,7 @@ namespace tswlun002{
          * @brief Get the Pixel Cordinates object
          * @return std::vector<std::pair<int, int>>  pixel co-ordinates
          */
-         std::vector<std::pair<int,int>> &getPixelCordinates();
+         std::vector<std::pair<int,int>> getPixelCordinates()const;
          /**
           * @brief Set the Number Pixel Component object
           */

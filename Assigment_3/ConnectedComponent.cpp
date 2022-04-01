@@ -71,7 +71,7 @@ void  ConnectedComponent::setPixelCordinates(const std::vector<std::pair<int,int
  * 
  * @return std::vector<std::pair<int, int>> 
  */
-std::vector<std::pair<int,int>> &ConnectedComponent::getPixelCordinates(){
+std::vector<std::pair<int,int>> ConnectedComponent::getPixelCordinates()const{
     return pixels_coordinates;
 }
 
