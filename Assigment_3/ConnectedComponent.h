@@ -10,7 +10,8 @@ namespace tswlun002{
          /* data */
          int numberPixels_component;
          int* component_identifier;
-         std::vector<std::vector<std::pair<int,int>>> pixels_coordinates;
+         //std::vector<std::pair<int, int>> setOfNumberComponent;
+         std::vector<std::pair<int,int>> pixels_coordinates;
      public:
          /**
           * @brief Default construct
@@ -43,10 +44,23 @@ namespace tswlun002{
           */
         void  setPixelCordinates(const std::vector<std::pair<int,int>>coOrdinate_component);
         /**
+         * @brief Set the Number Component object
+         * 
+         * @param numberComponents is the  identifier's component  and  number of pixels 
+         
+        void setNumberComponent(const std::pair<int, int> numberComponents);
+        /**
+         * @brief Get the Set Of Number Component object
+         * 
+         * @return std::vector<std::pair<int, int>> identifier's component  and  number of pixels 
+         
+         std::vector<std::pair<int, int>> &getSetOfNumberComponent();
+         */
+        /**
          * @brief Get the Pixel Cordinates object
          * @return std::vector<std::pair<int, int>>  pixel co-ordinates
          */
-         std::vector<std::vector<std::pair<int,int>>> getPixelCordinates()const;
+         std::vector<std::pair<int,int>> &getPixelCordinates();
          /**
           * @brief Set the Number Pixel Component object
           */

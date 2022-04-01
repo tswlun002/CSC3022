@@ -121,10 +121,9 @@ void PGMimageProcessor::readFile(){
                 infile.read(reinterpret_cast<char*>(data.get()), (numberPixels)*sizeof(unsigned char));
                 if(infile){
                     setDimenstions(num_of_cols, num_of_rows);
-                    std::cout<<num_of_cols<<" "<< num_of_rows<<std::endl;
+                    //std::cout<<num_of_cols<<" "<< num_of_rows<<std::endl;
                      toTwoDimenstio(data.get());
-                    //writeToFile(data.get());
-                    //extractAllComponent(data.get());
+                    
                 }
                 else{
                     std::cout<<"Error at "<<infile.gcount()<<std::endl;
@@ -175,13 +174,15 @@ void PGMimageProcessor::setTreshold(int threshold=128){
             allData[row][column] =data_oneD[row*width+column];
          }
       }
-      //extractAllComponent(temp_data.get()->get());
-      println("Hey, its done");
  }
  /**
  * @brief Destroy the PGMimageProcessor object
  */
 PGMimageProcessor::~PGMimageProcessor(){
+}
+
+void PGMimageProcessor::storeComponents(){
+    componetsList.push_back(connectedComponent.getPixelCordinates());
 }
 
 /**
@@ -195,24 +196,17 @@ PGMimageProcessor::~PGMimageProcessor(){
  */
 
 int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSize){
+
+    connectedComponent.getPixelCordinates().clear();
+    connectedComponent.getPixelCordinates().shrink_to_fit();
+
     valid_data = std::vector(height, std::vector<unsigned char>(width));
     extractOnThreshHoldComponent(threshold, valid_data);
-    
-    ConnectedComponent connectedComponent;
-    
+    //writeToFile(valid_data);
     findComponent(valid_data,threshold,minValidSize,connectedComponent);
-     writeToFile(valid_data);
-    
-    println("size = "+std::to_string(connectedComponent.getPixelCordinates().size()));
 
-    /* for(int i=0; i<connectedComponent.getNumberPixelComponent(); i++){
-           //println(xy1[i].size());
-           for(int j=0; j<connectedComponent.getPixelCordinates()[i].size(); j++){
-                print(connectedComponent.getPixelCordinates()[i][j].first);
-                print(connectedComponent.getPixelCordinates()[i][j].second);
-                println("");
-           }
-    }*/
+ 
+
     return connectedComponent.getPixelCordinates().size();
 
 }
@@ -229,9 +223,6 @@ void  PGMimageProcessor::extractOnThreshHoldComponent(int threshold_detection,_2
             ((int)allData[i][j] >=threshold_detection)? data[i][j]=255:data[i][j]=0;
         }
     }
-    std::cout<<width<<" "<< height<<std::endl;
-   
-
 }
  /**
   * @brief find components that meet intesity threshold and minimum 
@@ -248,44 +239,54 @@ void  PGMimageProcessor::extractOnThreshHoldComponent(int threshold_detection,_2
   */
 void PGMimageProcessor::findComponent(_2D_vector& data,const int threshold,const int minimumSize,ConnectedComponent &connectedComponent){
      std::vector<std::pair<int,int>>coOrdinate_component;
-     
+     _2D_vector data1=data;
      int count =0;
     for (int i=0; i<height; i++) 
     { 
         for (int j=0; j<width; j++){
-            int currentPixel = data[i][j]; 
+            int currentPixel = data1[i][j]; 
     
             if(currentPixel>=threshold){
-                //println(currentPixel);
-                int numberComponents=floodFill(data, j, i, currentPixel,0,coOrdinate_component, 0);
-                 //println(numberComponents) ;
+        
+                int numberComponents=floodFill(data1, j, i, currentPixel,0,coOrdinate_component, 0);
+        
                 if(numberComponents>=minimumSize){
                     connectedComponent.setComponentIdentifier(count);
-                    ++count;
                     connectedComponent.setPixelCordinates(coOrdinate_component);
                     connectedComponent.setNumberPixelComponent(numberComponents);
-                    coOrdinate_component.clear();
+                    //connectedComponent.setNumberComponent(std::make_pair(count,numberComponents));
+                    ++count;
+                    
                 }
-               // xy1.push_back(coOrdinate_component);
+                else{
+                    for(int j=0; j<coOrdinate_component.size(); j++){
+                        int x  = coOrdinate_component[j].first;
+                        int y =coOrdinate_component[j].second;
+                        data[y][x]=0;
+                    }
+                }
                 coOrdinate_component.clear();
                 
             }
         }
     } 
-    //println(connectedComponent.getPixelCordinates().size()) ;
 
-}/**
+}
+
+/**
  * @brief  use flood fill algorithm to find & store co-ordinates of the connected components
  * and count the connected components
- * First check if x and y are out of bound , if true, return count
- * check if data at (x,y) less 255, if true, return count
- * check if data at (x,y) equals to current pixel(which is always zero), if true, return count
- * Else, we replace data at (x,y) by zero  to not its visited
+ * Make Queue and store forground pixel
+ * while Queue is not empty
+ * check if x and y are not out of bound
+ * and check if data at (x,y) not equals to current pixel(which is always zero), if true
+ * we replace data at (x,y) by zero  to not its visited
  * Store co-ordinate x,y and increment count
- * Get right connected component by recursive
- * Get left connected component by recursive
- * Get up connected component by recursive
- * Get down connected component by recursive
+ * Get and store right connected component by recursive
+ * Get and store left connected component by recursive
+ * Get and store up connected component by recursive
+ * Get and store down connected component by recursive
+ * Else pop out 
  * return total connect components for forground pixel
  * @param data  data use to store connected components
  * @param x  - coordinate
@@ -297,51 +298,86 @@ void PGMimageProcessor::findComponent(_2D_vector& data,const int threshold,const
  * @return int  total of connectect  for each forground pixels
  */
    
- int PGMimageProcessor::floodFill(_2D_vector& data,int x, int y, int currColor, int currePixel, std::vector<std::pair<int,int>>&coOrdinates,int count){
- // Base cases 
-    if (x < 0 || x >= width || y < 0 || y >= height){ 
-         return count;
-    }
-    if (data[y][x]<255) {
-         return count;
-    } 
-    if (data[y][x] == currePixel) {
-          return count;
-    }
-    
-    else{
-    
-        data[y][x] = currePixel; 
-       
-        coOrdinates.push_back(std::make_pair(x,y));
-        count++;
-        // Recursively call for north, east, south and west 
-        int r= floodFill(data, x+1, y, currColor, currePixel, coOrdinates,count);  count=0;
-        int l=floodFill(data, x-1, y, currColor, currePixel,coOrdinates,count);    count=0;
-        int u= floodFill(data, x, y+1, currColor, currePixel,coOrdinates,count);  count=0;
-        int d= floodFill(data, x, y-1, currColor, currePixel,coOrdinates,count); count=0;
-       return r+l+u+d;
-    }
-    
+ int PGMimageProcessor::floodFill(_2D_vector& data,int x, int y, int currColor, int currePixel,
+  std::vector<std::pair<int,int>>&coOrdinates,int count)
+  {
+    std::queue<std::pair<int,int>> Queue;
 
+    Queue.push(std::make_pair(x,y));
+    
+    while(!Queue.empty()){
+        
+        x =Queue.front().first;
+        y =Queue.front().second;
+        if( x >= 0 && x < width && y >= 0 && y < height && data[y][x] != currePixel){
+            data[y][x] = currePixel;
+            coOrdinates.push_back(std::make_pair(x,y));
+            ++count;
+            Queue.push(std::make_pair(x+1,y));
+            Queue.push(std::make_pair(x-1,y));
+            Queue.push(std::make_pair(x,y+1));
+            Queue.push(std::make_pair(x,y-1));
+           
+        }
+        else{
+            Queue.pop();
+        }
+    }
+    return count;
  }
 
- /**
- * @brief Write pixels to file  to make image frame for vidoe
- * Convert 2-D image frames to 1-D pointer and write data to files
- * delete 1-D buffer 
- * @param imageSequence  vector of 2-D pointer  of image frames
+/** @brief  with an iterator - though your container of connected
+ * components and filter out (remove) all the components which do not
+ * obey the size criteria pass as arguments. The number remaining
+ * after this operation should be returned.
+ * @param minSize - minimum bound number of component connected 
+ * @param maxSize - maximum bound number of component connected 
+ * @return int number connected components meet bounds 
  */
-void PGMimageProcessor::writeToFile(_2D_vector data){
+int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize){
+   
+   std::vector<std::vector<std::pair<int,int>>> componets =connectedComponent.getPixelCordinates();
+   
+   connectedComponent.getPixelCordinates().clear();
+   connectedComponent.getPixelCordinates().shrink_to_fit();
+   int size =componets.size();
+  
+   for(int i=0; i<size; i++){
+       if(componets[i].size()>=minSize && componets[i].size()<=maxSize){
+           connectedComponent.setPixelCordinates(componets[i]);
+       }else{
+           for(int j=0; j<componets[i].size(); j++){
+                 int x  = componets[i][j].first;
+                 int y =componets[i][j].second;
+                 valid_data[y][x]=0;
+           }
+       }
+   }
+   return connectedComponent.getPixelCordinates().size();
+}
+
+
+/**
+ * @brief create a new PGM file which contains all current components
+ * 255=component pixel, 0 otherwise) and write this to outFileName as a
+ * valid PGM. the return value indicates success of operation  
+ * @param outFileName - name of the pgm file
+ * @return true  if successful created image
+ * @return false  if image not succeful created
+ */
+bool PGMimageProcessor::writeComponents(const std::string & outFileName){
     std::shared_ptr<unsigned char[]> buffer(new unsigned char[width*height]);
+    std::vector<std::vector<std::pair<int,int>>> data =connectedComponent.getPixelCordinates();
     int n = width*height;
+    int size = data.size();
+    
     for(int i=0; i<height; i++){
         for(int j=0; j<width; j++){
-            buffer[i*width+j]=data[i][j];
+            buffer[i*width+j]=valid_data[i][j];
         }
     }
    
-    std::ofstream infile("Okay1.pgm",std::ios::binary);
+    std::ofstream infile(outFileName+".pgm",std::ios::binary);
     infile<<"P5\n";
     infile<<width<<" "<<height<<"\n";
     infile<<255<<"\n";
@@ -349,12 +385,57 @@ void PGMimageProcessor::writeToFile(_2D_vector data){
     infile.write( reinterpret_cast<char *>(buffer.get()),(n)*sizeof(unsigned char));
     if(!infile){
         std::cout<<"Error in file"<<std::endl;
+        return false;
+    }
+    else{
+        return true;
     }
     infile.close();
-    
 
-    
-    
 }
+
+/**
+ * @brief Get the Component Count 
+ */
+int PGMimageProcessor::getComponentCount(void) const{
+    std::vector<std::vector<std::pair<int,int>>> componets =connectedComponent.getPixelCordinates();
+    return componets.size();
+}
+
+ // Base cases 
+   
+   /* if (x < 0 || x >= width || y < 0 || y >= height){ 
+        println("note0 "+std::to_string(x)+" "+std::to_string(y));
+        return count;
+    }
+   
+    if (data[y][x] == currePixel) {
+        println("note01 "+std::to_string(x)+" "+std::to_string(y));
+        return count;
+    }
+    
+    else{
+         println("note1 "+std::to_string(x)+" "+std::to_string(y));
+        data[y][x] = currePixel; 
+        // println("note2 "+std::to_string(x)+" "+std::to_string(y));
+        coOrdinates.push_back(std::make_pair(x,y));
+        //println("note3 "+std::to_string(x)+" "+std::to_string(y));
+        count++;
+        // println("note4 "+std::to_string(x)+" "+std::to_string(y));
+        // Recursively call for north, east, south and west 
+        int right=x+1;
+        int left=x-1;
+        int up =y+1;
+        int down =y-1;
+         //println("note10 "+std::to_string(count)+" "+std::to_string(currePixel));
+         int r =floodFill(data,right, y, currColor, currePixel, coOrdinates,count);  count=0;
+        println("note2 "+std::to_string(x)+" "+std::to_string(y));
+        
+        int l=floodFill(data, left, y, currColor, currePixel,coOrdinates,count);    count=0; println("note6 "+std::to_string(x)+" "+std::to_string(y));
+        int u= floodFill(data, x, up, currColor, currePixel,coOrdinates,count);  count=0; println("note7 "+std::to_string(x)+" "+std::to_string(y));
+        int d= floodFill(data, x, down, currColor, currePixel,coOrdinates,count); count=0; println("note8 "+std::to_string(x)+" "+std::to_string(y));
+        // println("note5 "+std::to_string(x)+" "+std::to_string(y));
+        return r+l+u+d;
+    }*/
 
 

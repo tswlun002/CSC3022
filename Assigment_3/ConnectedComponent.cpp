@@ -64,14 +64,14 @@ ConnectedComponent& ConnectedComponent::operator=(ConnectedComponent&& other){
  * @param x - co-ordinate 
  */
 void  ConnectedComponent::setPixelCordinates(const std::vector<std::pair<int,int>>coOrdinate_component){
-    pixels_coordinates.push_back(coOrdinate_component);
+    pixels_coordinates =coOrdinate_component;
 }
 /**
  * @brief Get the Pixel Cordinates object
  * 
  * @return std::vector<std::pair<int, int>> 
  */
-std::vector<std::vector<std::pair<int,int>>> ConnectedComponent::getPixelCordinates()const{
+std::vector<std::pair<int,int>> &ConnectedComponent::getPixelCordinates(){
     return pixels_coordinates;
 }
 
@@ -104,6 +104,24 @@ void ConnectedComponent::setComponentIdentifier(const int id){
 int* ConnectedComponent::getIdentifier()const{
     return component_identifier;
 }
+/**
+ * @brief Set the Number Component object
+ * 
+ * @param numberComponents 
+ *
+void ConnectedComponent::setNumberComponent(const std::pair<int, int> numberComponents){
+    setOfNumberComponent.push_back(numberComponents);
+}
+
+/**
+ * @brief Get the Set Of Number Component object
+ * 
+ * @return std::vector<std::pair<int, int>> identifier's component  and  number of pixels 
+ 
+std::vector<std::pair<int, int>>& ConnectedComponent::getSetOfNumberComponent(){
+    return setOfNumberComponent;
+}
+*/
 /**
  * @brief Destroy the Connected Component object
  */
