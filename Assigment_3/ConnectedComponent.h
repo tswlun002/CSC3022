@@ -1,4 +1,13 @@
-
+/**
+ * @file ConnectedComponent.h
+ * @author Lunga Tsewu (tswlun002@myuct.ac.za)
+ * @brief  Implementation the  ConnectedComponent .Encapsulates information about a connected component
+ * @version 0.1
+ * @date 2022-03-29
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #ifndef CONNECTEDCOMPONENT_H
 #define CONNECTEDCOMPONENT_H
 #include <vector>

@@ -1,3 +1,13 @@
+/**
+ * @file PGMimageProcessor.cpp
+ * @author Lunga Tsewu (tswlun002@myuct.ac.za)
+ * @brief  Image processing class that can extract all the connected components 
+ * for the image,given some user-supplied threshold,, minimum size and maximum size 
+ * @version 0.1
+ * @date 2022-03-29
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include "PGMimageProcessor.h"
 #include <cstring>
 #include <sstream>
@@ -104,7 +114,7 @@ PGMimageProcessor& PGMimageProcessor::operator = (PGMimageProcessor && other)
 /**
  * @brief Reads image file (only pgm formated file)
  */
-void PGMimageProcessor::readFile(){
+bool PGMimageProcessor::readFile(){
     std::ifstream infile(filename, std::ios::binary);
     std::string inputLine;
     int maxIntensity, num_of_rows,num_of_cols;
@@ -148,6 +158,7 @@ void PGMimageProcessor::readFile(){
                 infile.seekg(numberChars+3,std::ios::beg);
                 int size = infile.tellg();
                 infile.read(reinterpret_cast<char*>(data.get()), (numberPixels)*sizeof(unsigned char));
+                bool readSuccessful =true;
                 if(infile){
                     setDimenstions(num_of_cols, num_of_rows);
                     //std::cout<<num_of_cols<<" "<< num_of_rows<<std::endl;
@@ -156,14 +167,16 @@ void PGMimageProcessor::readFile(){
                 }
                 else{
                     std::cout<<"Error at "<<infile.gcount()<<std::endl;
+                    readSuccessful=false;
                 }
-                break;
+                return readSuccessful;
             }
         }
     }
     else
     {
-        std::cout<<"File Can not be found, enter correct name of the file"<< std::endl; 
+        std::cout<<"File Can not be found, enter correct name of the file"<< std::endl;
+        return false; 
     }
     infile.close();
 }
@@ -185,6 +198,13 @@ void PGMimageProcessor::setDimenstions(int _width, int _height){
      minimumComponent_Size=minSize;
      maximumComponent_Size=maxSize;
  }
+ /**
+ * @brief Get the Max Size object
+ */
+int PGMimageProcessor::defualtedMaxSize()const{
+   int max =height*width;
+   return max;
+}
 /**
  * @brief Set the Treshold object
  */
@@ -220,12 +240,10 @@ PGMimageProcessor::~PGMimageProcessor(){}
  */
 
 int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSize){
-
-    componetsList.clear();
-    componetsList.shrink_to_fit();
-    valid_data = std::vector(height, std::vector<unsigned char>(width));
+    //println((int)threshold);
+    valid_data = std::move(std::vector(height, std::vector<int>(width)));
     extractOnThreshHoldComponent(threshold, valid_data);
-    findComponent(valid_data,threshold,minValidSize);
+    findComponent(valid_data,threshold,minValidSize,width*height);
 
     return componetsList.size();
 
@@ -235,12 +253,18 @@ int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSi
  * based on the supplied threshold (0...255) 
  * @param data- data of image we use to check and change pixels that meet intesity threshold
  */
-void  PGMimageProcessor::extractOnThreshHoldComponent(int threshold_detection,_2D_vector& data){
+void  PGMimageProcessor::extractOnThreshHoldComponent(unsigned char threshold_detection,two_d_vector& data){
  
    
     for(int i=0; i<height; i++){
         for(int j=0; j<width; j++){
-            ((int)allData[i][j] >=threshold_detection)? data[i][j]=255:data[i][j]=0;
+            if( ((int)allData[i][j]) >= ((int)threshold_detection) ){
+                
+                data[i][j]=255;
+            }
+            else{
+                data[i][j]=0;
+            }
         }
     }
 }
@@ -257,20 +281,21 @@ void  PGMimageProcessor::extractOnThreshHoldComponent(int threshold_detection,_2
   * @param minimumSize  - minimum number of connected components
   * @param connectedComponent  - Object which store all the information of the component 
   */
-void PGMimageProcessor::findComponent(_2D_vector& data,const int threshold,const int minimumSize){
+void PGMimageProcessor::findComponent(two_d_vector& data,const unsigned char threshold,const int minimumSize, int maxSize){
      std::vector<std::pair<int,int>>coOrdinate_component;
-     _2D_vector data1=data;
+     two_d_vector data1=data;
      int count =1;
+     int count1 =1;
     for (int i=0; i<height; i++) 
     { 
         for (int j=0; j<width; j++){
             int currentPixel = data1[i][j]; 
-    
-            if(currentPixel>=threshold){
-        
+            
+            if((int)currentPixel>=(int)threshold){
+                 
                 int numberComponents=floodFill(data1, j, i, currentPixel,0,coOrdinate_component, 0);
                 
-                if(numberComponents>=minimumSize && numberComponents<=maximumComponent_Size){
+                if(numberComponents>=minimumSize && numberComponents<=maxSize){
                     std::unique_ptr<ConnectedComponent>component ( new ConnectedComponent());
                     component->setComponentIdentifier(count);
                     component->setPixelCordinates(coOrdinate_component);
@@ -314,13 +339,13 @@ void PGMimageProcessor::findComponent(_2D_vector& data,const int threshold,const
  * @param x  - coordinate
  * @param y  - coordinate
  * @param currColor 
- * @param currePixel - pixel use to replace visited pixel
+ * @param visitedPixel - pixel use to replace visited pixel
  * @param coOrdinates - co-ordinate of pixel
  * @param count - number pixel connect  for each forground pixel
  * @return int  total of connectect  for each forground pixels
  */
    
- int PGMimageProcessor::floodFill(_2D_vector& data,int x, int y, int currColor, int currePixel,
+ int PGMimageProcessor::floodFill(two_d_vector& data,int x, int y, int currColor, int visitedPixel,
   std::vector<std::pair<int,int>>&coOrdinates,int count)
   {
     std::queue<std::pair<int,int>> Queue;
@@ -331,8 +356,8 @@ void PGMimageProcessor::findComponent(_2D_vector& data,const int threshold,const
         
         x =Queue.front().first;
         y =Queue.front().second;
-        if( x >= 0 && x < width && y >= 0 && y < height && data[y][x] != currePixel){
-            data[y][x] = currePixel;
+        if( x >= 0 && x < width && y >= 0 && y < height && data[y][x] != visitedPixel){
+            data[y][x] = visitedPixel;
             coOrdinates.push_back(std::make_pair(x,y));
             ++count;
             Queue.push(std::make_pair(x+1,y));

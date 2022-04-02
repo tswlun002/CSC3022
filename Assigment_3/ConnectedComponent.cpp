@@ -1,3 +1,13 @@
+/**
+ * @file ConnectedComponent.cpp
+ * @author Lunga Tsewu (tswlun002@myuct.ac.za)
+ * @brief  Header the  ConnectedComponent .Encapsulates information about a connected component
+ * @version 0.1
+ * @date 2022-03-29
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include "ConnectedComponent.h"
 using namespace tswlun002;
 /**

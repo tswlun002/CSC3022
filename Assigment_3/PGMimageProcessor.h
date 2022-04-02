@@ -1,3 +1,14 @@
+/**
+ * @file PGMimageProcessor.h
+ * @author Lunga Tsewu (tswlun002@myuct.ac.za)
+ * @brief  Image processing class that can extract all the connected components 
+ * for the image,given some user-supplied threshold, minimum size and maximum size 
+ * @version 0.1
+ * @date 2022-03-29
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #ifndef PGMIMAGEPROCESSOR_H
 #define PGMIMAGEPROCESSOR_H
 #include "ConnectedComponent.h"
@@ -9,7 +20,7 @@ namespace tswlun002
     class PGMimageProcessor
     {
     typedef std::vector<std::vector<unsigned char>>  _2D_vector;
-        
+    typedef std::vector<std::vector<int>>  two_d_vector;
     private:
 
         /* data */
@@ -17,7 +28,8 @@ namespace tswlun002
         int width,height;
         int minimumComponent_Size, maximumComponent_Size;
         int threshold_detection;
-        _2D_vector allData,valid_data;
+        _2D_vector allData;
+        two_d_vector valid_data;
         std::vector<std::unique_ptr<ConnectedComponent>> componetsList;
     
     
@@ -57,7 +69,7 @@ namespace tswlun002
         /**
          * @brief Reads image file (only pgm formated file)
          */
-        void readFile();
+        bool readFile();
         /**
          * @brief Set the Dimenstions object
          */
@@ -66,6 +78,10 @@ namespace tswlun002
          * @brief Set the Component Size object
          */
         void setComponentSize(int min, int max);
+        /**
+         * @brief Get the Max Size object
+         */
+        int defualtedMaxSize()const;
         /**
          * @brief Set the Treshold object
          */
@@ -88,16 +104,16 @@ namespace tswlun002
         /**
          * @brief extract all components 
          */
-        void  extractOnThreshHoldComponent(int threshold,_2D_vector& data);
+        void  extractOnThreshHoldComponent(unsigned char threshold,two_d_vector& data);
         /**
          * @brief  find components that meet intesity threshold and minimum 
          * number of compoonents 
          */
-        void findComponent(_2D_vector &data,const int threshold,const int minimumSize);
+        void findComponent(two_d_vector &data,const unsigned char threshold,const int minimumSize, int maxSize);
      /**
       * @brief implement floodfill algorithm to get connected components
       */
-        int floodFill(_2D_vector &data,int x, int y, int currColor,
+        int floodFill(two_d_vector &data,int x, int y, int currColor,
          int currePixel, std::vector<std::pair<int,int>>&data1,int count);
 
         /** iterate - with an iterator - though your container of connected
