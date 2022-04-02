@@ -4,15 +4,12 @@
 #include<string>
 #include <memory>
 #include <iostream>
-//#define print(x) std::cout << x;
-//#define println(x) std::cout << x << std::endl;
-
 namespace tswlun002
 {
     class PGMimageProcessor
     {
-        typedef std::unique_ptr<std::unique_ptr<unsigned char[]>[]> _2DUnique_prt;
-        typedef std::vector<std::vector<unsigned char>>  _2D_vector;
+    typedef std::vector<std::vector<unsigned char>>  _2D_vector;
+        
     private:
 
         /* data */
@@ -21,9 +18,8 @@ namespace tswlun002
         int minimumComponent_Size, maximumComponent_Size;
         int threshold_detection;
         _2D_vector allData,valid_data;
-        std::vector<_2DUnique_prt> data;
-        ConnectedComponent connectedComponent;
-        std::vector<std::vector<std::pair<int,int>>> componetsList;
+        std::vector<std::unique_ptr<ConnectedComponent>> componetsList;
+    
     
 
     public:
@@ -97,7 +93,7 @@ namespace tswlun002
          * @brief  find components that meet intesity threshold and minimum 
          * number of compoonents 
          */
-        void findComponent(_2D_vector &data,const int threshold,const int minimumSize,ConnectedComponent &connectedComponent);
+        void findComponent(_2D_vector &data,const int threshold,const int minimumSize);
      /**
       * @brief implement floodfill algorithm to get connected components
       */
@@ -133,6 +129,13 @@ namespace tswlun002
          * @return  number of pixels in smallest component
          */
         int getSmallestSize(void) const;
+
+        /** 
+         * @brief  the data for a component to std::cout
+         * see ConnectedComponent class;
+         * print out to std::cout: component ID, number of pixels
+        */
+        void printComponentData(const ConnectedComponent & theComponent) const;
     };
     
     

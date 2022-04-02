@@ -13,22 +13,37 @@ using namespace tswlun002;
 
 /**
  * @brief Construct a new PGMimageProcessor object
- * 
  */
-PGMimageProcessor::PGMimageProcessor(){}
+PGMimageProcessor::PGMimageProcessor():filename(""),width(0),height(0),minimumComponent_Size(3),
+ maximumComponent_Size(width*height),threshold_detection(128){
+     valid_data.clear();
+     componetsList.clear();
+ }
 /**
  * @brief Construct a new PGMimageProcessor object
  * @param _filename -to initialise filename data field
  */
-PGMimageProcessor::PGMimageProcessor(const std::string & _filename): filename(_filename){}
+PGMimageProcessor::PGMimageProcessor(const std::string & _filename): filename(_filename),width(0),height(0),minimumComponent_Size(3),
+ maximumComponent_Size(width*height),threshold_detection(128){
+     valid_data.clear();
+     componetsList.clear();
+ }
 /**
- * copy constructor for class
- * @param other
+ * @brief  constructor for class
+ * Use for loop because Component are store unique pointer
+ * @param other is other PGMimageProcessor object
  */ 
 PGMimageProcessor::PGMimageProcessor(const PGMimageProcessor& other):
 filename(other.filename),threshold_detection(other.threshold_detection),
 minimumComponent_Size(other.minimumComponent_Size),maximumComponent_Size(other.maximumComponent_Size)
-,width(other.width),height(other.height){}
+,width(other.width),height(other.height),valid_data(other.valid_data){
+    this->componetsList.clear();
+     for(int i=0; i< other.componetsList.size(); i++){
+         this->componetsList[i].get()->setComponentIdentifier(other.componetsList[i].get()->getIdentifier());
+         this->componetsList[i].get()->setNumberPixelComponent(other.componetsList[i].get()->getNumberPixelComponent());
+         this->componetsList[i].get()->setPixelCordinates(other.componetsList[i].get()->getPixelCordinates());
+    }
+}
 
 /**
  * move constructor
@@ -37,10 +52,14 @@ minimumComponent_Size(other.minimumComponent_Size),maximumComponent_Size(other.m
 PGMimageProcessor::PGMimageProcessor(PGMimageProcessor && other):
 filename(other.filename),threshold_detection(other.threshold_detection),
 minimumComponent_Size(other.minimumComponent_Size),maximumComponent_Size(other.maximumComponent_Size)
-,width(other.width),height(other.height){}
+,width(other.width),height(other.height){
+    valid_data =std::move(other.valid_data);
+    componetsList =std::move(other.componetsList);
+}
 
 /**
- * copy operator
+ * @brief copy assignment 
+ * Use for loop because Component are store unique pointer
  * @return PGMimageProcessor
  */ 
 PGMimageProcessor& PGMimageProcessor::operator = (const PGMimageProcessor & other)
@@ -52,12 +71,20 @@ PGMimageProcessor& PGMimageProcessor::operator = (const PGMimageProcessor & othe
      this->threshold_detection   = other.threshold_detection;
      this->width  = other.width;
      this->height = other.height;
+     this->valid_data =other.valid_data;
+     this->componetsList.clear();
+     for(int i=0; i< other.componetsList.size(); i++){
+         this->componetsList[i].get()->setComponentIdentifier(other.componetsList[i].get()->getIdentifier());
+         this->componetsList[i].get()->setNumberPixelComponent(other.componetsList[i].get()->getNumberPixelComponent());
+         this->componetsList[i].get()->setPixelCordinates(other.componetsList[i].get()->getPixelCordinates());
+     }
+
     }
     return *this;
 }
 
 /**
- * move operator 
+ * move assigment  
  * @return PGMimageProcessor
  */ 
 PGMimageProcessor& PGMimageProcessor::operator = (PGMimageProcessor && other)
@@ -69,6 +96,8 @@ PGMimageProcessor& PGMimageProcessor::operator = (PGMimageProcessor && other)
      this->threshold_detection   = other.threshold_detection;
      this->width  = other.width;
      this->height = other.height;
+     this->valid_data =std::move(other.valid_data);
+     this->componetsList =std::move(other.componetsList);
     }
     return *this;
 }
@@ -178,12 +207,7 @@ void PGMimageProcessor::setTreshold(int threshold=128){
  /**
  * @brief Destroy the PGMimageProcessor object
  */
-PGMimageProcessor::~PGMimageProcessor(){
-}
-
-void PGMimageProcessor::storeComponents(){
-    componetsList.push_back(connectedComponent.getPixelCordinates());
-}
+PGMimageProcessor::~PGMimageProcessor(){}
 
 /**
  * @brief  process the input image to extract all the connected components,
@@ -199,10 +223,9 @@ int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSi
 
     componetsList.clear();
     componetsList.shrink_to_fit();
-
     valid_data = std::vector(height, std::vector<unsigned char>(width));
     extractOnThreshHoldComponent(threshold, valid_data);
-    findComponent(valid_data,threshold,minValidSize,connectedComponent);
+    findComponent(valid_data,threshold,minValidSize);
 
     return componetsList.size();
 
@@ -234,10 +257,10 @@ void  PGMimageProcessor::extractOnThreshHoldComponent(int threshold_detection,_2
   * @param minimumSize  - minimum number of connected components
   * @param connectedComponent  - Object which store all the information of the component 
   */
-void PGMimageProcessor::findComponent(_2D_vector& data,const int threshold,const int minimumSize,ConnectedComponent &connectedComponent){
+void PGMimageProcessor::findComponent(_2D_vector& data,const int threshold,const int minimumSize){
      std::vector<std::pair<int,int>>coOrdinate_component;
      _2D_vector data1=data;
-     int count =0;
+     int count =1;
     for (int i=0; i<height; i++) 
     { 
         for (int j=0; j<width; j++){
@@ -246,12 +269,14 @@ void PGMimageProcessor::findComponent(_2D_vector& data,const int threshold,const
             if(currentPixel>=threshold){
         
                 int numberComponents=floodFill(data1, j, i, currentPixel,0,coOrdinate_component, 0);
-        
-                if(numberComponents>=minimumSize){
-                    connectedComponent.setComponentIdentifier(count);
-                    connectedComponent.setPixelCordinates(coOrdinate_component);
-                    connectedComponent.setNumberPixelComponent(numberComponents);
-                    storeComponents();
+                
+                if(numberComponents>=minimumSize && numberComponents<=maximumComponent_Size){
+                    std::unique_ptr<ConnectedComponent>component ( new ConnectedComponent());
+                    component->setComponentIdentifier(count);
+                    component->setPixelCordinates(coOrdinate_component);
+                    component->setNumberPixelComponent(numberComponents);
+                    componetsList.push_back(std::move(component));
+                    
                     ++count;
                     
                 }
@@ -332,21 +357,25 @@ void PGMimageProcessor::findComponent(_2D_vector& data,const int threshold,const
  * @return int number connected components meet bounds 
  */
 int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize){
-   
-   std::vector<std::vector<std::pair<int,int>>> componets =componetsList;
-   
-   componetsList.clear();
-   componetsList.shrink_to_fit();
-   int size =componets.size();
+    
+    std::vector<std::unique_ptr<ConnectedComponent>> componets =std::move(componetsList);
+
+    int size =componets.size();
   
-   for(int i=0; i<size; i++){
-       if(componets[i].size()>=minSize && componets[i].size()<=maxSize){
-           connectedComponent.setPixelCordinates(componets[i]);
-           storeComponents();
+    for(int i=0; i<size; i++){
+        
+       if(componets[i]->getNumberPixelComponent()>=minSize && componets[i]->getNumberPixelComponent()<=maxSize){
+           
+           componets[i]->setComponentIdentifier(i+1);
+           componets[i]->setPixelCordinates(componets[i].get()->getPixelCordinates());
+           componets[i]->setNumberPixelComponent(componets[i].get()->getNumberPixelComponent());
+           componetsList.push_back(std::move(componets[i]));
        }else{
-           for(int j=0; j<componets[i].size(); j++){
-                 int x  = componets[i][j].first;
-                 int y =componets[i][j].second;
+           std::vector<std::pair<int,int>> componets1  =componets[i]->getPixelCordinates();
+         
+           for(int j=0; j<componets1.size(); j++){
+                 int x  = componets1[j].first;
+                 int y = componets1[j].second;
                  valid_data[y][x]=0;
            }
        }
@@ -365,9 +394,7 @@ int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize){
  */
 bool PGMimageProcessor::writeComponents(const std::string & outFileName){
     std::shared_ptr<unsigned char[]> buffer(new unsigned char[width*height]);
-    std::vector<std::vector<std::pair<int,int>>> data =componetsList;
     int n = width*height;
-    int size = data.size();
     
     for(int i=0; i<height; i++){
         for(int j=0; j<width; j++){
@@ -403,9 +430,9 @@ int PGMimageProcessor::getComponentCount(void) const{
  */
 int PGMimageProcessor::getLargestSize(void) const{
     if(!componetsList.empty()){
-        int prev_componentsize  = componetsList[0].size();
+        int prev_componentsize  = componetsList[0]->getNumberPixelComponent();
         for(int i=1; i<componetsList.size();i++){
-            int next_componentSize=componetsList[i].size();
+            int next_componentSize=componetsList[i]->getNumberPixelComponent();
             if(prev_componentsize<next_componentSize)
                 prev_componentsize=next_componentSize;
             else
@@ -423,9 +450,9 @@ int PGMimageProcessor::getLargestSize(void) const{
  */
 int PGMimageProcessor::getSmallestSize(void) const{
     if(!componetsList.empty()){
-        int prev_componentsize  = componetsList[0].size();
+        int prev_componentsize  = componetsList[0]->getNumberPixelComponent();
         for(int i=1; i<componetsList.size();i++){
-            int next_componentSize=componetsList[i].size();
+            int next_componentSize=componetsList[i]->getNumberPixelComponent();
             if(prev_componentsize<next_componentSize)
                 prev_componentsize=prev_componentsize;
             else
@@ -437,4 +464,13 @@ int PGMimageProcessor::getSmallestSize(void) const{
     else
         return 0;
 }
+/** 
+ * @brief  the data for a component to std::cout
+ * see ConnectedComponent class;
+ * print out to std::cout: component ID, number of pixels
+*/
+void PGMimageProcessor::printComponentData(const ConnectedComponent & theComponent) const{
+    std::cout<<theComponent;
+}
+
 

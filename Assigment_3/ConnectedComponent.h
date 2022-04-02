@@ -2,6 +2,7 @@
 #ifndef CONNECTEDCOMPONENT_H
 #define CONNECTEDCOMPONENT_H
 #include <vector>
+#include <ostream>
 namespace tswlun002{
      
      class ConnectedComponent
@@ -9,7 +10,7 @@ namespace tswlun002{
      private:
          /* data */
          int numberPixels_component;
-         int* component_identifier;
+         int component_identifier;
          //std::vector<std::pair<int, int>> setOfNumberComponent;
          std::vector<std::pair<int,int>> pixels_coordinates;
      public:
@@ -48,14 +49,6 @@ namespace tswlun002{
          * 
          * @param numberComponents is the  identifier's component  and  number of pixels 
          
-        void setNumberComponent(const std::pair<int, int> numberComponents);
-        /**
-         * @brief Get the Set Of Number Component object
-         * 
-         * @return std::vector<std::pair<int, int>> identifier's component  and  number of pixels 
-         
-         std::vector<std::pair<int, int>> &getSetOfNumberComponent();
-         */
         /**
          * @brief Get the Pixel Cordinates object
          * @return std::vector<std::pair<int, int>>  pixel co-ordinates
@@ -76,7 +69,14 @@ namespace tswlun002{
          /**
           * @brief Get the Identifier object
           */
-         int* getIdentifier()const;
+         int getIdentifier()const;
+          /**
+           * @brief Overload cout to print out id and number pixels of the component
+           */
+         friend std::ostream& operator<<(std::ostream& print , const ConnectedComponent& object){
+            print<<"Component ID is: "<<object.getIdentifier()<<" number of pixels: "<<object.getNumberPixelComponent()<<std::endl;
+            return print;
+         }
          /**
           * @brief Destroy the Connected Component object
           */

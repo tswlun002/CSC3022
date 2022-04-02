@@ -3,15 +3,17 @@ CC=g++                  #the compiler name
 CCFLAGS=-std=c++2a      #flags passed to compiler
 TARGET=findcomp        #executable file
 OBJECT= *.o             #binary file(s) 
-SOURCE= *.cpp           #cc++ file(s)
+SOURCE= ConnectedComponent.cpp  PGMimageProcessor.cpp	Driver.cpp         #cc++ file(s)
+SOURCE_WITH_UNIT_TEST= ConnectedComponent.cpp  PGMimageProcessor.cpp	Tester.cpp         #cc++ file(s)
 
-#linking rules
-$(TARGET): $(OBJECT)
-	$(CC)	$(OBJECT)	-o	$(TARGET)	$(CCFLAGS)
 
-#building rule
-$(OBJECT): $(SOURCE)
-	$(CC)	-c	$(SOURCE)	$(CCFLAGS)
+#building rule with no unit test
+default:
+	$(CC)	$(SOURCE)	$(CCFLAGS) -o	$(TARGET)
+
+#building rule with  unit test
+test:
+	$(CC)	$(SOURCE_WITH_UNIT_TEST)	$(CCFLAGS)	-o	$(TARGET)
 
 #execution rule 
 run:

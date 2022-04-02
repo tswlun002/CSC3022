@@ -11,7 +11,7 @@ using namespace tswlun002;
 int testExtract(int threshold, int minSize,PGMimageProcessor &object){
     int number = object.extractComponents(threshold,minSize);
     
-    println("number components at threshold of "+std::to_string(threshold)+
+    println("Number components at threshold of "+std::to_string(threshold)+
     " and minimum size of "+std::to_string(minSize)+":  "+std::to_string(number));
 
    // println("After filter = "+std::to_string(object.filterComponentsBySize(3,608*502)));
@@ -39,7 +39,7 @@ int testFilterBySize(int min, int maxSize,PGMimageProcessor &object){
 bool writeFile(const std::string& name, PGMimageProcessor & object){
     bool value = object.writeComponents(name);
     std::string ans = (value>0? "true":"false");
-    println(" filename is successful created ? : "+ans);
+    println("Filename is successful created ? : "+ans);
     return value;
 }
 /**
@@ -48,7 +48,7 @@ bool writeFile(const std::string& name, PGMimageProcessor & object){
  */
  TEST_CASE("Test extractComponents"){
     object.readFile();
-    println("Test extractComponents");
+    println("\nTest extractComponents:");
     /*REQUIRE(testExtract(1,3,object)==1);
     REQUIRE(testExtract(50,3,object)==1);
     REQUIRE(testExtract(128,400,object)==1);
@@ -65,10 +65,10 @@ bool writeFile(const std::string& name, PGMimageProcessor & object){
  * 
  */
  TEST_CASE("Test filterComponentsBySize"){
-    println("Test filterComponentsBySize")
+    println("\nTest filterComponentsBySize:")
     //REQUIRE(testExtract(220,100,object)==6);
     //REQUIRE(testFilterBySize(3,1,object)==0);
-    REQUIRE(testFilterBySize(100,6000,object)==2);
+    REQUIRE(testFilterBySize(100,6500,object)==3);
     /**REQUIRE(testFilterBySize(50,608*502,object)==0);
     REQUIRE(testFilterBySize(100,608*502,object)==6);
     REQUIRE(testFilterBySize(180,2000,object)==5);
@@ -82,7 +82,7 @@ bool writeFile(const std::string& name, PGMimageProcessor & object){
  * @brief Test write to file
  */
 TEST_CASE("Test writeComponent"){
-    println("Test WriteComponent");
+    println("\nTest WriteComponent:");
     REQUIRE(writeFile("NN",object)==1);
 }
 int testGetComponentCount(PGMimageProcessor &object){
@@ -96,7 +96,8 @@ int testGetComponentCount(PGMimageProcessor &object){
  * 
  */
 TEST_CASE(" test getComponentCount"){
-    REQUIRE(testGetComponentCount(object)==2);
+    println("\nTest getComponentCount:");
+    REQUIRE(testGetComponentCount(object)==3);
 }
 int testgetLargestSize(PGMimageProcessor &object){
     int value = object.getLargestSize();
@@ -108,18 +109,29 @@ int testgetLargestSize(PGMimageProcessor &object){
  * 
  */
 TEST_CASE(" test getLargestSize"){
-    REQUIRE(testgetLargestSize(object)< 6000);
+    println("\nTest getLargestSize:");
+    REQUIRE(testgetLargestSize(object)< 6500);
 }
-
+/**
+ * @brief get small size component 
+ */
 int testgetSmallestSize(PGMimageProcessor &object){
     int value = object.getSmallestSize();
     println("Small components size = " +std::to_string(value));
     return value;
 }
 /**
- * @brief test getComponentCount
+ * @brief test getSmallestSize
  * 
  */
-TEST_CASE(" test getSmallestSize"){
+TEST_CASE("Test getSmallestSize"){
+    println("\nTest getSmallestSize:");
     REQUIRE(testgetSmallestSize(object)< 5000);
+}
+
+TEST_CASE("test printComponentData"){
+    println("\nTest printComponentData  :");
+    ConnectedComponent  connectedComponent;
+    connectedComponent.setComponentIdentifier(3);
+    object.printComponentData(connectedComponent);
 }
