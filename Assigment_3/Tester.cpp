@@ -32,16 +32,37 @@ int testExtract(int threshold, int minSize,PGMimageProcessor &object){
  * 
  */
  TEST_CASE("Test extractComponents"){
-    int extractTestList[13][3] ={
+    int chessImageTest[13][3] ={
         {1,2,1},{1,3,1},{50,3,1},{128,400,1},{150,455,1},{180,500,6},
         {180,500,6},{200,50,6},{220,100,6},{250,3,2},{255,3,0},{255,2,0},{255,1,2}
+        };
+    int testImage[15][3] ={
+        {1,2,1},{1,3,1},{50,3,1},{128,400,1},{150,455,1},{180,500,1},
+        {190,500,3},{200,50,3},{245,100,3},{247,3,0},{250,3,0},{245,6000,3},{245,7000,2},{245,10000,1},{245,12000,0}
+        };
+    int test1Image[10][3] ={
+        {1,2,1},{1,3,1},{150,10000,1},{200,10000,1},{215,455,3},{220,500,7},
+        {245,500,5},{247,50,3},{250,3,0},{220,1000,6}
         };
    
     println("\nTest extractComponents:");
     for(int i=0; i<13; i++){
         object = std::move(PGMimageProcessor("chess.pgm"));
         object.readFile();
-        REQUIRE(testExtract(extractTestList[i][0],extractTestList[i][1],object)==extractTestList[i][2]);
+        REQUIRE(testExtract(chessImageTest[i][0],chessImageTest[i][1],object)==chessImageTest[i][2]);
+
+    }
+    for(int i=0; i<15; i++){
+        object = std::move(PGMimageProcessor("test.pgm"));
+        object.readFile();
+        REQUIRE(testExtract(testImage[i][0],testImage[i][1],object)==testImage[i][2]);
+
+    }
+    for(int i=0; i<10; i++){
+        object = std::move(PGMimageProcessor("test1.pgm"));
+        object.readFile();
+        REQUIRE(testExtract(test1Image[i][0],test1Image[i][1],object)==test1Image[i][2]);
+        object.writeComponents("Noways");
 
     }
         
@@ -51,7 +72,7 @@ int testExtract(int threshold, int minSize,PGMimageProcessor &object){
  * @brief print information about method filterComponentsBySize
  */
 int testFilterBySize(int min, int maxSize,PGMimageProcessor &object){
-    object.extractComponents(180,500);
+    
     int number = object.filterComponentsBySize(min,maxSize);
     println("Number components at minimum size of "+std::to_string(min)+
     " and maxmum size of "+std::to_string(maxSize)+":  "+std::to_string(number));
@@ -69,11 +90,35 @@ int testFilterBySize(int min, int maxSize,PGMimageProcessor &object){
         {4000,6900,3},{4000,7200,4},{4000,7700,5},{4000,8000,5},
         {4000,8500,6},{5000,8500,5},{6000,8500,4},{6700,8500,3},{7800,8500,1},{8100,8500,0}
     };
-
+    int testImage[12][3] ={
+        {1,2,0},{100,500,0},{1000,5000,0},{5000,6500,1},{6000,7000,1},
+        {6000,7800,2},{6000,10000,2},{6000,11000,2},{6000,11600,3},{6500,11600,2},{7800,11600,1},{11600,20000,0}
+        };
+    int test1Image[8][3] ={
+        {1,2,0},{5000,10000,0},{10000,11100,1},{10000,18000,2},{10000,50000,3},{11100,50000,2},
+        {18000,50000,1},{50000,100000,0}
+        };
     for(int i=0; i<15; i++){
         object = std::move(PGMimageProcessor("chess.pgm"));
         object.readFile();
+        object.extractComponents(180,500);
         REQUIRE(testFilterBySize(testList[i][0],testList[i][1],object)==testList[i][2]);
+    }
+     for(int i=0; i<12; i++){
+         
+        object = std::move(PGMimageProcessor("test.pgm"));
+        object.readFile();
+        object.extractComponents(245,500);
+        REQUIRE(testFilterBySize(testImage[i][0],testImage[i][1],object)==testImage[i][2]);
+
+    }
+    for(int i=0; i<8; i++){
+        object = std::move(PGMimageProcessor("test1.pgm"));
+        object.readFile();
+        object.extractComponents(215,500);
+        REQUIRE(testFilterBySize(test1Image[i][0],test1Image[i][1],object)==test1Image[i][2]);
+        //object.writeComponents("Noways");
+
     }
     
 }
@@ -101,12 +146,38 @@ TEST_CASE("test writeComponent"){
         {4000,6900,3},{4000,7200,4},{4000,7700,5},{4000,8000,5},{4000,8500,6},{5000,8500,5},
         {6000,8500,4},{6700,8500,2},{7800,8500,1},{8100,8500,0}
     };
+     int testImage[12][3] ={
+        {1,2,0},{100,500,0},{1000,5000,0},{5000,6500,1},{6000,7000,1},
+        {6000,7800,2},{6000,10000,2},{6000,11000,2},{6000,11600,3},{6500,11600,2},{7800,11600,1},{11600,20000,0}
+        };
+    int test1Image[8][3] ={
+        {1,2,0},{5000,10000,0},{10000,11100,1},{10000,18000,2},{10000,50000,3},{11100,50000,2},
+        {18000,50000,1},{50000,100000,0}
+        };
     for(int i=0; i<16; i++){
         object = std::move(PGMimageProcessor("chess.pgm"));
         object.readFile();
         object.extractComponents(180,500);
         object.filterComponentsBySize(extractTestList[i][0],extractTestList[i][1]);
-        REQUIRE(object.writeComponents(std::to_string(extractTestList[i][0])+"-"+std::to_string(extractTestList[i][1]))==true);
+        REQUIRE(object.writeComponents("chess-"+std::to_string(extractTestList[i][0])+"-"+std::to_string(extractTestList[i][1]))==true);
+    }
+
+    for(int i=0; i<12; i++){
+         
+        object = std::move(PGMimageProcessor("test.pgm"));
+        object.readFile();
+        object.extractComponents(245,500);
+        object.filterComponentsBySize(testImage[i][0],testImage[i][1]);
+        REQUIRE(object.writeComponents("test-"+std::to_string(testImage[i][0])+"-"+std::to_string(testImage[i][1]))==true);
+
+
+    }
+    for(int i=0; i<8; i++){
+        object = std::move(PGMimageProcessor("test1.pgm"));
+        object.readFile();
+        object.extractComponents(215,500);
+        object.filterComponentsBySize(test1Image[i][0],test1Image[i][1]);
+        REQUIRE(object.writeComponents("test1-"+std::to_string(test1Image[i][0])+"-"+std::to_string(test1Image[i][1]))==true);
     }
    
    

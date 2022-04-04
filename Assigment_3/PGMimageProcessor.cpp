@@ -498,4 +498,60 @@ void PGMimageProcessor::printComponentData(const ConnectedComponent & theCompone
     std::cout<<theComponent;
 }
 
+/**
+ * @brief print out data of all components
+ * Which ID and number of pixels of each component
+ */
+void PGMimageProcessor::printAllComponentsData()const{
+    for(int i=0; i<componetsList.size(); i++){
+        std::cout<<*(componetsList[i]);
+    }
+}
+/**
+ * @brief store components to set instead of  vector container
+ * componants are stored from smallest to largest components
+ */
+void  PGMimageProcessor::storeSetContainer(){
+    typedef std::multiset<ConnectedComponent>::iterator iterator;
+    if(!componetsList.empty()){
+        setComponents.insert(*componetsList[0]);
+        for(int i = 1; i<componetsList.size(); i++) {
+            iterator index = setComponents.begin();
+            for( iterator it = setComponents.begin(); it!=setComponents.end(); ++it) {
+                if(compareComponents(*it, *componetsList[i])){
+                    ++index;     
+                }
+            }
+            setComponents.insert(index,*componetsList[i]); 
+        } 
+
+    }
+   
+}
+/**
+ * @brief print out data of all components in order
+ * Which ID and number of pixels of each component
+ */
+void PGMimageProcessor::printOrderedComponentsData()const{
+     
+     for(std::set<ConnectedComponent>::iterator it = setComponents.begin();
+      it!= setComponents.end(); ++it){
+          std::cout<<*it;
+      }
+}
+/**
+ * @brief compares two components . This method helps to order components
+ * compare them by size 
+ * @param lhs  fisrt components to be compared
+ * @param rhs  second components to be compared
+ * @return true  if first or lhs is less than second or rhs
+ * @return false if first or lhs is greater or equal second or rhs
+ */
+bool  PGMimageProcessor::compareComponents (const ConnectedComponent & lhs,const ConnectedComponent & rhs)
+{
+    return lhs < rhs ? true:false;
+}
+
+
+
 

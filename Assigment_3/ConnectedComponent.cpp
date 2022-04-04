@@ -144,6 +144,5 @@ void ConnectedComponent::operator<<(std::ostream& print){
  * @brief Destroy the Connected Component object
  */
 ConnectedComponent::~ConnectedComponent(){
-    if(this->component_identifier!=0)
-         this->component_identifier=0;
+ 
 }

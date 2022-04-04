@@ -19,6 +19,7 @@ int main(int argc, char *argv[]){
     bool sizeGiven= false;
     bool thresholdGive= false;
     bool ouputfileNameGiven=false;
+    bool useSet =false;
     for(int i=0; i<argc; i++){
        
         if(i==1){
@@ -41,6 +42,9 @@ int main(int argc, char *argv[]){
             outputFilename=argv[i+1];
            
         }
+        if(argv[i][1]=='o'){
+          useSet=true;
+        }
     }
     
     PGMimageProcessor object(inputfilename);
@@ -60,6 +64,12 @@ int main(int argc, char *argv[]){
     if(printAll){
         object.extractComponents(threshold, min);
         object.filterComponentsBySize(min, max);
+        if(useSet){
+           object.storeSetContainer();
+           object.printOrderedComponentsData();
+        }else{
+            object.printAllComponentsData();
+        }
         println("Total number of components = "+std::to_string(object.getComponentCount()));
         println("Component smallest size = "+std::to_string(object.getSmallestSize()));
         println("Component Largest size = "+std::to_string(object.getLargestSize()));
@@ -67,6 +77,7 @@ int main(int argc, char *argv[]){
        object.extractComponents(threshold, min);
        object.filterComponentsBySize(min, max);
     }
+
 
     //if no ouput name given
     if(!ouputfileNameGiven){

@@ -15,6 +15,7 @@
 #include<string>
 #include <memory>
 #include <iostream>
+#include <set>
 namespace tswlun002
 {
     class PGMimageProcessor
@@ -31,7 +32,8 @@ namespace tswlun002
         _2D_vector allData;
         two_d_vector valid_data;
         std::vector<std::unique_ptr<ConnectedComponent>> componetsList;
-    
+        std::multiset<ConnectedComponent> setComponents;
+        
     
 
     public:
@@ -152,9 +154,26 @@ namespace tswlun002
          * print out to std::cout: component ID, number of pixels
         */
         void printComponentData(const ConnectedComponent & theComponent) const;
+        /**
+         * @brief print out data of all components
+         * Which ID and number of pixels of each component
+         */
+        void printAllComponentsData()const;
+        /**
+         * @brief store components to set instead of  vector container
+         */
+        void storeSetContainer();
+        /**
+         * @brief print out data of all components in order
+         * Which ID and number of pixels of each component
+         */
+        void printOrderedComponentsData()const;
+        /**
+         * @brief  compare two components based on size 
+         */
+        bool compareComponents (const ConnectedComponent & lhs,const ConnectedComponent & rhs);
+       
     };
     
-    
 } // namespace tswlun002
-
 #endif

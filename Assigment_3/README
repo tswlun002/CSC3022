@@ -1,0 +1,28 @@
+README FOR COMPILATION, CLEANING FILES AND RUNNING OF THE APPLICATION
+
+COMPILATION use command: $make default              #To compile for Driver file
+			 $make test                 #To compile for unit test file
+
+RUNNING use command:
+option1 - Test core work with Driver:
+./findcomp image_name -s minimumSize maximumSize -t Threshold -w outputfilename -w process outputfilename  # for E.G ./findcomp  test1.pgm -s 1 2000000 -t 215 -p -w ZA
+                                                                           
+
+option2 - Test mastery with Driver :
+./findcomp image_name -s minimumSize maximumSize -t Threshold -w outputfilename -w process outputfilename -o # For E.G ./findcomp  test1.pgm -s 1 2000000 -t 215 -p -w ZA
+                                                                                # Here -o means we must use set of container instead of vector 
+For unit Test:
+   use command $make run or $./findcomp  
+                                                                             
+ outputfilename:
+ I used three images for testing which chess.pgm , test.pgm and test1.pgm. They are in directory testImage. to run code they need to be copied to directory Assignment_3.
+ All the ouputfile name for input chess.pgm  will be named as chess-minSize-maxSize.pgm
+ All the ouputfile name for input test.pgm  will be named as test-minSize-maxSize.pgm
+ All the ouputfile name for input test1.pgm  will be named as test1-minSize-maxSize.pgm
+ 
+
+CLEANING use command: $make clean  # all *.pgm, *.png,  *.o ,findcomp will be removed     
+
+
+//NB please befor running make sure to copy test image from directory testImages to directory Assigment_3                                                                                               
+                                                                                                                                                                           

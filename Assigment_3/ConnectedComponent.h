@@ -86,6 +86,12 @@ namespace tswlun002{
             print<<"Component ID is: "<<object.getIdentifier()<<" number of pixels: "<<object.getNumberPixelComponent()<<std::endl;
             return print;
          }
+
+         friend bool operator<( const ConnectedComponent& object1 , const ConnectedComponent& object2){
+            
+            return object1.getNumberPixelComponent()<object2.getNumberPixelComponent()? true:false ;
+         }
+
          /**
           * @brief Destroy the Connected Component object
           */

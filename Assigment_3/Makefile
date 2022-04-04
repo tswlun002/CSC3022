@@ -10,10 +10,12 @@ SOURCE_WITH_UNIT_TEST= ConnectedComponent.cpp  PGMimageProcessor.cpp	Tester.cpp 
 #building rule with no unit test
 default:
 	$(CC)	$(SOURCE)	$(CCFLAGS) -o	$(TARGET)
+	
 
 #building rule with  unit test
 test:
 	$(CC)	$(SOURCE_WITH_UNIT_TEST)	$(CCFLAGS)	-o	$(TARGET)
+
 
 #execution rule 
 run:
@@ -23,3 +25,4 @@ run:
 clean:
 	@rm	-f	*.o 
 	@rm	-f	findcomp
+	@rm	-f	*.pgm
