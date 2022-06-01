@@ -10,17 +10,45 @@ int main(){
     Tsewu lu("Lu");
     Tsewu wanga;
     Tsewu Bonile("Bonile");
-    Template<Tsewu, 3>template_lu(lu);
-    std::cout<<template_lu;
-    std::cout<<template_lu.min(lu, wanga);
-    std::cout<<template_lu.min(lu, Bonile);
-    
-    template_lu[0]=lu;
-    template_lu(1)=wanga;
-    template_lu(2)=Bonile;
     Tsewu sizwe("Sizwe");
-    template_lu(1,sizwe);
-    std::cout<<template_lu;
+    Template<Tsewu, 3>template_obj(lu);
+    std::cout<<template_obj;
+    std::cout<<template_obj.min(lu, wanga);
+    std::cout<<template_obj.min(lu, Bonile);
+    
+    template_obj[0]=lu;
+    template_obj(1)=wanga;
+    template_obj(2)=Bonile;
+    template_obj(1,sizwe);
 
+   std::cout<<"***********1*********\n";
+   std::cout<<template_obj;
+
+
+   std::cout<<"**********Constructable**********\n";
+   ////test copy construct 
+   Template<Tsewu, 3>template_obj_1(template_obj);
+   std::cout<<template_obj_1;
+
+
+   std::cout<<"********** Copyable**********\n";
+   ////test copy Assignment 
+   Template<Tsewu, 3>template_obj_2;
+   template_obj_2= template_obj_1;
+   std::cout<<template_obj_2;
+
+
+
+   std::cout<<"********** Movable **********\n";
+   //test move construct
+   Tsewu lungile  = Tsewu("Lungisile");
+   Template<Tsewu,3> N{Template<Tsewu, 3>(lungile) };
+   std::cout<<N;
+   //test move assignment
+   template_obj_1 = std::move(template_obj_2);
+   std::cout<<template_obj_1;
+ 
+   
+    
     return 0;
 }

@@ -16,7 +16,7 @@ namespace my_concepts{
         {print<<object};
     };
     template<typename T> 
-    concept Equals_or_NotEquals = requires( const T & object_a, const T & object_b){
+    concept EqualsComparable = requires( const T & object_a, const T & object_b){
         {object_a==object_b || object_a!=object_b};
     };
     template<typename T> 
@@ -24,7 +24,7 @@ namespace my_concepts{
         {object_a<object_b};
     };
     template<typename T> 
-    concept greaterThanComparable = requires( const T & object_a, const T & object_b){
+    concept GreaterThanComparable = requires( const T & object_a, const T & object_b){
         {object_a>object_b};
     };
 
@@ -39,6 +39,19 @@ namespace my_concepts{
     template<typename T> 
     concept Insert_Mutable = requires(T & object_a, int index){
         {Round_Mutable<T> && Square_Mutable<T>};
+    };
+
+    template<typename T> 
+    concept Copyable = requires(T &object_a,  const T &object_b ){
+        {object_a=object_b};
+    };
+    template<typename T> 
+    concept Movable = requires(T &&object_a, T &&object_b ){
+        {object_a=std::move(object_b)};
+    };
+    template<typename T> 
+    concept Addable = requires(const T &object_a, const T &object_b ){
+        {object_a+object_b};
     };
 
 };
@@ -56,26 +69,57 @@ private:
     
 public:
     Template(/* args */);
+
     Template(T & elements);
-    Template(Template<T,size>& object)requires Equals_or_NotEquals<T>;
-    T& operator=(Template<T,size> & object)requires Equals_or_NotEquals<T>;
+    //Template(T && elements);
+
+    Template( const Template<T,size>& object)requires Copyable<T>;
+
+    Template<T, size>& operator=(const Template<T,size> & object)requires Copyable<T>;
+
+    Template(Template<T,size>&& object)requires Movable<T>;
+
+    Template<T, size>& operator=(Template<T,size> && object)requires Movable<T>;
+
+
     T& operator[](const int index) requires Square_Mutable<T>;
+
     T& operator()(const int index)requires Round_Mutable<T>  ;
-    const bool operator!=(Template<T,size> & object)requires Equals_or_NotEquals<T>;
+
+    const bool operator!=( const Template<T,size> & object)requires EqualsComparable<T>;
+
     void operator()(const int index, const T& element) requires Insert_Mutable<T> ;
+
     T* getElements();
 
     const T & min(const T & lhs, const T & rhs)requires LessThanComparable<T>;
 
     template<typename T_, int size_>
     friend std::ostream& operator<<(std::ostream & print,  Template<T_,size_> & object) requires Printable<T_>;
+
     ~Template();
 };
+
+
+/**
+ * @brief defaulted  construct
+ * 
+ * @tparam T  typename
+ * @tparam size  size array
+ */
 template<typename T, int size>
 Template<T, size>::Template(/* args */):elements(new T[size])
 {
 }
-
+/**
+ * @brief Get min T given two T objects 
+ * 
+ * @tparam T typename
+ * @tparam size array
+ * @param lhs  object 1 to compare  object 2
+ * @param rhs  object 2  to compare object 1
+ * @return const T&  minimum object between two given objects 
+ */
 template <typename T, int size> 
 const T & Template < T, size>::min(const T & lhs, const T & rhs)
 requires LessThanComparable<T>
@@ -83,60 +127,196 @@ requires LessThanComparable<T>
     return lhs < rhs ? lhs : rhs;
 }
 
+/**
+ * @brief Construct takes param T typename
+ * 
+ * @tparam T typename
+ * @tparam size  size array
+ * @param element  to be store to this class elements
+
+ */
 template<typename T, int size> 
 Template<T, size>::Template(T & element){
     elements =new T[size];
     elements[0]= element;
 }
+/**
+ * @brief Copy coonstruct
+ * 
+ * @tparam T typename
+ * @tparam size  size array
+ * @param object  to be copy to this class
+ */
 template<typename T, int size>
+Template<T, size>::Template(const Template<T,size>& object)requires Copyable<T>{
+    if(this != &object){
+        if(this->elements != nullptr){
+             elements = nullptr;
+        }
 
-Template<T, size>::Template(Template<T,size>& object)requires Equals_or_NotEquals<T>:elements(new T[size]){
-    if(*this != object){
-        if(*this->elements != nullptr)
-            delete [] elements ;
-
-        for(int i=0; i<size; i++){
-            elements[i] = new T(object.elements[i]);
+        elements = new T[size];
+        if(object.elements != nullptr){
+            for(int i=0; i<size; i++){
+                elements[i] = object.elements[i];
+            }
         }
     }
         
     
 }
+/**
+ * @brief Copy Assignment
+ * 
+ * @tparam T typename
+ * @tparam size  size array
+ * @param object  to be copy to this class
+ * @return Template<T, size>&  this class
+ */
 template<typename T, int size>
-T& Template<T, size>::operator=(Template<T,size> & object)requires Equals_or_NotEquals<T>{
+Template<T, size>& Template<T, size>::operator=(const Template<T,size> & object)requires Copyable<T>{
     
-     if(*this == object)
-        return this;
-    delete [] elements ;
-    for(int i=0; i<size; i++){
-        elements[i] = new T(object.elements[i]);
-    }
+     if(this != &object){
+
+        if(this->elements != nullptr){
+                 elements =nullptr ;
+        }
+        
+        elements = new T[size];
+
+        if(object.elements != nullptr){
+
+            for(int i=0; i<size; i++){
+                elements[i] = object.elements[i];
+            }
+        }
+     }
+    return *this;
 
 }
-
+/**
+ * @brief Move Construct
+ * 
+ * @tparam T typename
+ * @tparam size  size array
+ * @param object  to be move to this class
+ */
 template<typename T, int size>
-const bool Template< T,  size>::operator!=(Template<T,size> & object)requires Equals_or_NotEquals<T>{
-   return (*this != object)? true:false;
-}
+Template<T, size>::Template(Template<T,size>&& object)requires Movable<T>{
+    
+    if(this->elements != nullptr){
+        delete [] this->elements ;
+        this->elements=nullptr;
+    }
+    this->elements = std::move(object.elements);
+    object.elements=nullptr;
 
+}
+/**
+ * @brief Move Assignment
+ * 
+ * @tparam T typename
+ * @tparam size  size array
+ * @param object  to be move to this class
+ * @return Template<T, size>&  this class
+ */
+template<typename T, int size>
+Template<T, size>& Template<T, size>::operator=(Template<T,size> && object)requires Movable<T>{
+    
+     if(this == &object){
+         object.elements =nullptr;
+
+     }
+    else{
+        if(this->elements != nullptr){
+            delete[] this->elements;
+            this->elements=nullptr;
+        }
+        if(object.elements != nullptr){
+           
+            this->elements = std::move(object.elements);
+            object.elements = nullptr;
+        }
+    }
+    
+    return *this;
+
+}
+/**
+ * @brief Overload operator != for this template class
+ * 
+ * @tparam T  typename
+ * @tparam size  array
+ * @param object template object compare with this clas
+ * @return true if this class equal object ( all elements in array are equals in the same indexes) 
+ * @return false otherwise
+ */
+template<typename T, int size>
+const bool Template< T,  size>::operator!=(const Template<T,size> & object)requires EqualsComparable<T>{
+    bool equals = true;
+    for( int i=0 ; i<size; i++){
+        equals = this->elements[i] == object.elements[i];
+        if (! equals)break;
+    }
+   return equals;
+}
+/**
+ * @brief overload operator[] for get element at given index 
+ * 
+* @tparam T typename
+ * @tparam size array
+ * @param index of element 
+ * @return T& of element 
+ */
 template<typename T, int size>
 T& Template<T, size>::operator[](const int index) requires Square_Mutable<T>{
 
     return elements[index];
 }
+/**
+ * @brief overload operator() for get element at given index 
+ * 
+ * @tparam T typename
+ * @tparam size array
+ * @param index of element 
+ * @return T& of element 
+ */
 template<typename T, int size>
 T& Template<T, size>::operator()(const int index) requires Round_Mutable<T> {
     return elements[index];
 }
+/**
+ * @brief overload operator() for mutating array at given index and element
+ * 
+ * @tparam T typename
+ * @tparam size  size array
+ * @param index  insertion index
+ * @param element  to insert at index
+ */
 template<typename T, int size>
 void Template<T, size>::operator()(const int index, const T& element) requires Insert_Mutable<T>{
      elements[index] = element;
 }
-
+/**
+ * @brief 
+ * 
+ * @tparam T typename
+ * @tparam size  array
+ * @return T*  array 
+ */
 template<typename T, int size>
 T* Template<T,size>::getElements() {
     return elements;
 }
+
+/**
+ * @brief overload operator<< for template class
+ * 
+ * @tparam T typename
+ * @tparam size  of array
+ * @param print ostream object
+ * @param object  object being printed out
+ * @return std::ostream&  object for this template class
+ */
 template<typename T, int size> 
 std::ostream& operator<<(std::ostream & print,  Template<T,size> & object)
 requires Printable<T>
@@ -147,7 +327,12 @@ requires Printable<T>
     }
     return print;
 }
-
+/**
+ * @brief Destroy the Template< T, size>:: Template object
+ * 
+ * @tparam T typename
+ * @tparam size  size array
+ */
 template<typename T, int size>
 Template<T, size>::~Template()
 {
