@@ -8,7 +8,7 @@ Three class  :
 
    class concepts_test.cpp  - invoke or tests other classes.
 
-COMPILATION use command: $make               #so we use Makefile, all excutable file will be on the current directory (Assignment_2)
+COMPILATION use command: $make               
 
 RUNNING use command: $ make run or ./extractor  
 
