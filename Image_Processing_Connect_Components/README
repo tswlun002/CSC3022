@@ -1,3 +1,22 @@
+Image processing with connected components
+
+In the area of image processing, we often threshold the intensity of pixels in a greyscale
+image to produce a new “binary” image which has foreground (intensity=255) pixels
+corresponding to the object(s) of interest (inputs >= threshold value), and background
+pixels (intensity=0), corresponding to image parts which are not of interest (lower than
+threshold value input). This serves as the first stage to more complex processing to allow
+more accurate detection of objects, and allows us to reason about object sizes and to reject
+erroneous object detections in an image (or video)
+
+Given a greyscale input image (PGM) and asked to provide
+an image processing class that can extract all the connected components for the image,
+given some user-supplied threshold. A connected component is a collection of image pixels
+which ‘touch’ each other. There are two categories of connectedness — but here we are
+concerned only with 4-connected pixels. These are foreground pixels which are connected
+to each other if they have a foreground neighbour to the N, E, S or W (any of these
+cases means they are connected)
+
+
 README FOR COMPILATION, CLEANING FILES AND RUNNING OF THE APPLICATION
 
 COMPILATION use command: $make default              #To compile for Driver file
