@@ -1,3 +1,13 @@
+Simple tag enumeration
+
+Program that can parse a text file which contains XML-like tags,
+in order to extract the tag types and the text elements they surround. More specifically,
+given such a text file you must
+1. identify each element tag
+2. count the number of occurrences of the tag and store the tag label
+3. store the text enclosed by each tag type.
+
+
 To compile code use command:
 $ make
 
