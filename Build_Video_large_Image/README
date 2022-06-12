@@ -1,8 +1,9 @@
-README FOR COMPILATION, CLEANING FILES AND RUNNING OF THE APPLICATION
+Building a ‘video’ from a large image
+
 Provided with a very large input image (for example, 16K x 16K “image moscaic” from
 an astronomy sky survey) we want to produce a video that captures the movement of a
 much smaller window across this large image. You can think of this as lens that allows us
-to focus on a trajectory of interes
+to focus on a trajectory of interest
 
 
 COMPILATION use command: $make               #so we use Makefile, all excutable file will be on the current directory (Assignment_2)
