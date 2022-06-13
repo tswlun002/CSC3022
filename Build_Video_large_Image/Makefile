@@ -15,7 +15,7 @@ $(OBJECT): $(SOURCE)
 
 #execution rule 
 run:
-	./exctractor
+	./extractor
 
 #clean rule     
 clean:

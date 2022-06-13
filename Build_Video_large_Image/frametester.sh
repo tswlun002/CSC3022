@@ -11,7 +11,7 @@ if [ $DEBUG -eq 0 ]; then
 fi
 
 EXE_NAME="extractor"
-IMAGE="sloan_image.pgm"
+IMAGE="../Images/sloan_image.pgm"
 
 FRAME_SRC="."
 # Change this if you want the videos to longer/shorter
