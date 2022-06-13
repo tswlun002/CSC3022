@@ -5,10 +5,14 @@ an astronomy sky survey) we want to produce a video that captures the movement o
 much smaller window across this large image. You can think of this as lens that allows us
 to focus on a trajectory of interest
 
+# RECOMMENDED USE MAKEFILE TO TEST THIS CODE AS FOLLOW:
+1 compile using $make
+2 run using $ make run
 
-COMPILATION use command: $make               #so we use Makefile, all excutable file will be on the current directory (Assignment_2)
 
-RUNNING use command:
+Explaining run command , note everything below is already written on frametester.sh.
+frametester.sh make video also and save them to their folder.
+
 option1 - Test core work:
 # for E.G ./extractor larger_image.pgm -t 0 0 800 800 -s 600 600 -w none SIMPLE 
  # process can be none or reverse or invert or revinvert
