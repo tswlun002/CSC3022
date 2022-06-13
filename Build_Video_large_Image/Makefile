@@ -15,7 +15,7 @@ $(OBJECT): $(SOURCE)
 
 #execution rule 
 run:
-	./extractor
+	chmod +x frametester;./frametester.sh
 
 #clean rule     
 clean:
