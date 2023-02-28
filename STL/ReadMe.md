@@ -14,7 +14,7 @@ make
 ```
 ### Removing Binary Files use command:
 ```bash
-make clean  # clean    
+make clean    
 ```
 OUTPUT will be printed on the command line. 
                                                                                                                                                                            
