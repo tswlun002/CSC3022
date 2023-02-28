@@ -24,13 +24,14 @@ Explaining run command , note everything below is already written on `frameteste
  ./extractor larger_image.pgm -t 0 0 800 800 -s 600 600 -w none SIMPLE 
 ```
 - Outputfilename will be concatenated with image number like `filename-NNNN.pgm`, where `NNNN` is the number
-```bash
 ./extractor image_name -t x1 y1 x2 y2 -s width height -w process outputfilename  
-```                                                                              
-                                                                                
+                                                                                                                                                            
  ### Option 2 - Test core work:
-./extractor image_name -t x1 y1 x2 y2 -s width height -w process outputfilename process outputfilename #for E.G  ./extractor larger_image.pgm -t 0 0 800 800 -s 600 600 -w none simple1  invert  simple2
-
+./extractor image_name -t x1 y1 x2 y2 -s width height -w process outputfilename process outputfilename 
+- for E.G :
+```bash
+- ./extractor larger_image.pgm -t 0 0 800 800 -s 600 600 -w none simple1  invert  simple2
+```
 ### Option 3 - Test mastery , Path:
 - here we tell video which path to use instead of start -End
 - -t is replaced by -p 
